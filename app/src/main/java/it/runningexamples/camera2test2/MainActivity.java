@@ -30,6 +30,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -48,8 +49,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PERMISSION_ALL = 1;
     String[] PERMISSIONS = {
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            android.Manifest.permission.CAMERA
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA
     };
 
     private static final String TAG = "AndroidCameraApi";
@@ -106,36 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         viene chiamato il metodo openCamera() per aprire la fotocamera. */
 
 
-
-    private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
-        @Override
-        public void onOpened(CameraDevice camera) {
-            //This is called when the camera is open
-            Log.e(TAG, "onOpened");
-            cameraDevice = camera;
-            createCameraPreview();
-        }
-
-        @Override
-        public void onDisconnected(CameraDevice camera) {
-            cameraDevice.close();
-        }
-
-        @Override
-        public void onError(CameraDevice camera, int error) {
-            cameraDevice.close();
-            cameraDevice = null;
-        }
-    };
-
-    final CameraCaptureSession.CaptureCallback captureCallbackListener = new CameraCaptureSession.CaptureCallback() {
-        @Override
-        public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-            super.onCaptureCompleted(session, request, result);
-            Toast.makeText(MainActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-            createCameraPreview();
-        }
-    };
+    private final CameraStateCallback cameraStateCallback = new CameraStateCallback();
 
     protected void startBackgroundThread() {
         mBackgroundThread = new HandlerThread("Camera Background");
@@ -160,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
         manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE); //Instanzio un camera manager, castando come Camera Manager il servizio CAMERA di android
+
         try {
             characteristics = manager.getCameraCharacteristics(cameraDevice.getId()); //Prendo le caratteristiche della camera tramite il suo ID (??)
             ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
@@ -182,34 +155,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             createFilePhoto(); //Chiama il metodo per creare il file dove salvare la foto
 
             //Salva la foto scattata all'interno del File Creato precedentemente
-            ImageListener imageListener= new ImageListener();
+            ImageListener imageListener = new ImageListener();
             reader.setOnImageAvailableListener(imageListener, mBackgroundHandler);
-            final CameraCaptureSession.CaptureCallback captureListener = new CameraCaptureSession.CaptureCallback() {
-                @Override
-                public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-                    super.onCaptureCompleted(session, request, result);
-                    Toast.makeText(MainActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-                    createCameraPreview();
-                }
-            };
-            cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
-                @Override
-                public void onConfigured(CameraCaptureSession session) {
-                    try {
-                        session.capture(captureRequestBuilder.build(), captureListener, mBackgroundHandler);
-                    } catch (CameraAccessException e) {
-                        e.printStackTrace();
-                    }
-                }
 
-                @Override
-                public void onConfigureFailed(CameraCaptureSession session) {
-                }
-            }, mBackgroundHandler);
+            CaptureCallback captureCallback = new CaptureCallback(); //crea la Callback per catturare l'immagine
+            SessionStateCallback sessionStateCallback = new SessionStateCallback(); //crea la callback per lo stato della CaptureSession
+            cameraDevice.createCaptureSession(outputSurfaces, sessionStateCallback, mBackgroundHandler); //crea la CaptureSession
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-    } //OK
+    }
 
     protected void createCameraPreview() {
         try {
@@ -257,15 +212,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             assert map != null;
             imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
-            manager.openCamera(cameraId, stateCallback, null);
+            manager.openCamera(cameraId, cameraStateCallback, null);
 
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
         Log.e(TAG, "openCamera X");
     }
+
     protected void updatePreview() {
-        if(null == cameraDevice) {
+        if (null == cameraDevice) {
             Log.e(TAG, "updatePreview error, return");
         }
         captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
@@ -275,6 +231,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         }
     }
+
     private void closeCamera() {
         if (null != cameraDevice) {
             cameraDevice.close();
@@ -290,24 +247,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_ALL:
-                if (grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
-                Toast.makeText(MainActivity.this, "Devi fornire i permessi per utilizzare l'app!", Toast.LENGTH_LONG).show();
-                finish();
-            }
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                    Toast.makeText(MainActivity.this, "Devi fornire i permessi per utilizzare l'app!", Toast.LENGTH_LONG).show();
+                    finish();
+                }
         }
         textureListener = new TextureListener();
     }
+
     @Override
     protected void onResume() {
         super.onResume();
         Log.e(TAG, "onResume");
         startBackgroundThread();
-        if (textureView.isAvailable() && hasPermissions(MainActivity.this,PERMISSIONS)) {
+        if (textureView.isAvailable() && hasPermissions(MainActivity.this, PERMISSIONS)) {
             openCamera();
         } else {
             textureView.setSurfaceTextureListener(textureListener);
         }
     }
+
     @Override
     protected void onPause() {
         Log.e(TAG, "onPause");
@@ -332,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return true;
     }
 
-    private void createFilePhoto(){
+    private void createFilePhoto() {
         // Crea il File dove salvare la foto scattata
         File folder = new File(Environment.getExternalStorageDirectory() +
                 File.separator + "camera2photos");
@@ -340,12 +299,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             folder.mkdirs(); //crea la directory delle foto se questa non esiste
         }
         String lastPic = Integer.toString(folder.listFiles().length);
-        String path = Environment.getExternalStorageDirectory() + "/camera2photos/pic"+lastPic;
-        file = new File(path+".jpg");
+        String path = Environment.getExternalStorageDirectory() + "/camera2photos/pic" + lastPic;
+        file = new File(path + ".jpg");
         int num = 1;
-        while (file.exists()){
-            String N = "("+num+")";
-            file = new File(path+N+".jpg");
+        while (file.exists()) {
+            String N = "(" + num + ")";
+            file = new File(path + N + ".jpg");
             num++;
         }
     }
@@ -370,7 +329,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {}
+        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+        }
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
@@ -378,7 +338,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
+        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+        }
 
     }
 
@@ -406,6 +367,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    class CaptureCallback extends CameraCaptureSession.CaptureCallback {
+        @Override
+        public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
+            super.onCaptureCompleted(session, request, result);
+            Toast.makeText(MainActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
+            createCameraPreview();
+        }
     }
+
+    class SessionStateCallback extends CameraCaptureSession.StateCallback {
+
+        @Override
+        public void onConfigured(@NonNull CameraCaptureSession session) {
+            try {
+                session.capture(captureRequestBuilder.build(), captureListener, mBackgroundHandler);
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+
+        }
+    }
+
+    class CameraStateCallback extends CameraDevice.StateCallback {
+        @Override
+        public void onOpened(CameraDevice camera) {
+            //This is called when the camera is open
+            Log.e(TAG, "onOpened");
+            cameraDevice = camera;
+            createCameraPreview();
+        }
+
+        @Override
+        public void onDisconnected(@NonNull CameraDevice camera) {
+
+        }
+
+        @Override
+        public void onError(@NonNull CameraDevice camera, int error) {
+
+        }
+
+
+    }
+}
 
 
