@@ -82,10 +82,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageReader imageReader; // Legge le foto scattate
     private File file; //File dove andrà salvata la foto scattata
     private boolean mFlashSupported; //??
-    private Handler mBackgroundHandler; //??
-    private HandlerThread mBackgroundThread; //??
 
-    TextureView.SurfaceTextureListener textureListener; //??
+    TextureListener textureListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,23 +106,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private final CameraStateCallback cameraStateCallback = new CameraStateCallback();
+    CaptureCallback captureCallback = new CaptureCallback();
+    ImageListener imageListener = new ImageListener();
+    SessionStateCallback sessionStateCallback = new SessionStateCallback(); //crea la callback per lo stato della CaptureSession
 
-    protected void startBackgroundThread() {
-        mBackgroundThread = new HandlerThread("Camera Background");
-        mBackgroundThread.start();
-        mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
-    }
 
-    protected void stopBackgroundThread() {
-        mBackgroundThread.quitSafely();
-        try {
-            mBackgroundThread.join();
-            mBackgroundThread = null;
-            mBackgroundHandler = null;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 
     protected void takePicture() { //Metodo che scatta e salva una foto
         if (null == cameraDevice) {
@@ -136,13 +122,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             characteristics = manager.getCameraCharacteristics(cameraDevice.getId()); //Prendo le caratteristiche della camera tramite il suo ID (??)
             ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
-            List<Surface> outputSurfaces = new ArrayList<Surface>(2);
+            Surface readerSurface = reader.getSurface(); //surface dell'ImageReader (Mostra la foto quando è scattata)
 
-            Surface readerSurface = reader.getSurface();
-            Surface textureSurface = new Surface(textureView.getSurfaceTexture());
-
-            outputSurfaces.add(readerSurface);     //inserisco nella lista la surface dell'ImageReader
-            outputSurfaces.add(textureSurface);      //inserisco nella lista la surface della textureView
 
             captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureRequestBuilder.addTarget(readerSurface);
@@ -154,13 +135,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             createFilePhoto(); //Chiama il metodo per creare il file dove salvare la foto
 
-            //Salva la foto scattata all'interno del File Creato precedentemente
-            ImageListener imageListener = new ImageListener();
-            reader.setOnImageAvailableListener(imageListener, mBackgroundHandler);
-
-            CaptureCallback captureCallback = new CaptureCallback(); //crea la Callback per catturare l'immagine
-            SessionStateCallback sessionStateCallback = new SessionStateCallback(); //crea la callback per lo stato della CaptureSession
-            cameraDevice.createCaptureSession(outputSurfaces, sessionStateCallback, mBackgroundHandler); //crea la CaptureSession
+            reader.setOnImageAvailableListener(imageListener, null);
+            cameraDevice.createCaptureSession(Arrays.asList(readerSurface), sessionStateCallback, null); //crea la CaptureSession
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -168,13 +144,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     protected void createCameraPreview() {
         try {
-            SurfaceTexture texture = textureView.getSurfaceTexture();
-            assert texture != null;
+            SurfaceTexture texture = textureView.getSurfaceTexture(); //Prende la SurfaceTexture della textureView (dove viene visualizzata l'anteprima nel .xml)
             texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
-            Surface surface = new Surface(texture);
+            Surface previewSurface = new Surface(texture);
             captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            captureRequestBuilder.addTarget(surface);
-            cameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
+            captureRequestBuilder.addTarget(previewSurface);
+            cameraDevice.createCaptureSession(Arrays.asList(previewSurface), new CameraCaptureSession.StateCallback() { //Crea la capture session
                 @Override
                 public void onConfigured(CameraCaptureSession cameraCaptureSession) {
                     //The camera is already closed
@@ -226,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
         try {
-            cameraCaptureSessions.setRepeatingRequest(captureRequestBuilder.build(), null, mBackgroundHandler);
+            cameraCaptureSessions.setRepeatingRequest(captureRequestBuilder.build(), null, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -259,7 +234,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         Log.e(TAG, "onResume");
-        startBackgroundThread();
         if (textureView.isAvailable() && hasPermissions(MainActivity.this, PERMISSIONS)) {
             openCamera();
         } else {
@@ -271,7 +245,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onPause() {
         Log.e(TAG, "onPause");
         //closeCamera();
-        stopBackgroundThread();
         super.onPause();
     }
 
@@ -376,12 +349,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
     class SessionStateCallback extends CameraCaptureSession.StateCallback {
+        //A callback object for receiving updates about the state of a camera capture session.
 
         @Override
         public void onConfigured(@NonNull CameraCaptureSession session) {
+            //This method is called when the camera device has finished configuring itself, and the session can start processing capture requests.
             try {
-                session.capture(captureRequestBuilder.build(), captureListener, mBackgroundHandler);
+                session.capture(captureRequestBuilder.build(), captureCallback, null);
             } catch (CameraAccessException e) {
                 e.printStackTrace();
             }
