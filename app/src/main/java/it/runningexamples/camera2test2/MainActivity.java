@@ -130,17 +130,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    protected void createCameraPreview() {
+    protected void createCameraPreview() { //Crea la surface dove verrà mostrata l'anteprima tramite updatePreview, e crea la CaptureSession dove passare le richieste.
         try {
             SurfaceTexture texture = textureView.getSurfaceTexture(); //Prende la SurfaceTexture della textureView (dove viene visualizzata l'anteprima nel .xml)
             assert texture != null;
             texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
             Surface previewSurface = new Surface(texture);
             Surface readerSurface = imageReader.getSurface();
-
             previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW); //Creo la CaptureRequest da passare alla sessione per mostrare la preview della camera
             previewRequestBuilder.addTarget(previewSurface);
-
             cameraDevice.createCaptureSession(Arrays.asList(previewSurface,readerSurface), sessionStateCallback, null);
         } catch (CameraAccessException e) {
             finish();
@@ -154,24 +152,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         nuovamente, per cui ignoro il warning.
      */
 
-    //TODO vedere openCamera
+
     @SuppressLint("MissingPermission")
     private void openCamera() {
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         Log.e(TAG, "is camera open");
         try {
-            cameraId = manager.getCameraIdList()[0];
-            characteristics = manager.getCameraCharacteristics(cameraId);
+            cameraId = manager.getCameraIdList()[0]; //Prende il cameraId della fotocamera principale del telefono
+            characteristics = manager.getCameraCharacteristics(cameraId); //Ottengo le caratteristiche della fotocamera principale tramite il suo cameraId
+
+            //Ottiene una StreamConfigurationMap dalle carachteristics della camera. contiene tutte le configurazioni di streaming disponibili supportate dal cameraDevice;
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             assert map != null;
             imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
-            imageReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
-            manager.openCamera(cameraId, cameraStateCallback, null);
-
+            imageReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1); //Instanzia l'imageReader per leggere e mostrare le foto scattate
+            manager.openCamera(cameraId, cameraStateCallback, null); //lancia il metodo openCamera che apre la connessione con il cameraDevice avente id cameraId
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-        Log.e(TAG, "openCamera X");
     }
 
 
@@ -180,9 +178,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (null == cameraDevice) {
             Log.e(TAG, "updatePreview error, return");
         }
-        previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+        previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO); //Builder della richiesta di preview
         try {
-            captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null);
+            captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null); //Richiede l'acquisizione ripetuta infinita di immagini da questa sessione. Permette di aggiornare continuamente l'immagine vista sulla surface.
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
