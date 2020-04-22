@@ -19,8 +19,6 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -34,7 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import org.w3c.dom.Text;
+
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,9 +40,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PERMISSION_ALL = 1;
@@ -68,18 +65,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //Variabili hardware fotocamera
     private String cameraId; //ID numerico della fotocamera hardware
     protected CameraDevice cameraDevice; //Oggetto che rappresenta una fotocamera hardware, con tutte le sue informazioni
-    protected CameraCaptureSession cameraCaptureSessions; //Sessione usata per passare una CaptureRequest al CameraDevice
-    protected CaptureRequest captureRequest; //Definisce i parametri per il cameraDevice (Risoluzione, ISO, Esposizione..)
+    protected CameraCaptureSession captureSession; //Sessione usata per passare una CaptureRequest al CameraDevice
     protected CameraCharacteristics characteristics; //Oggetto che contiene tutte le informazioni del cameraDevice, come ad esempio il cameraId
-    protected CaptureRequest.Builder captureRequestBuilder; //Inizializza i campi di una CaptureRequest in uno dei template definiti nel CameraDevice
+    protected CaptureRequest.Builder previewRequestBuilder; //Inizializza i campi di una CaptureRequest in uno dei template definiti nel CameraDevice. Questo è la request per chiedere di mostrare la preview della camera
+    protected CaptureRequest.Builder pictureRequestBuilder;
     protected CameraManager manager; //Gestisce tutti i cameraDevice e permette di ottenere i cameraCharacteristics di ognuno
+    protected ImageReader imageReader; //Visualizza le foto una volta scattate
 
     //Variabili immagine di output
     private static final int width = 640;
     private static final int height = 480;
 
     private Size imageDimension;
-    private ImageReader imageReader; // Legge le foto scattate
     private File file; //File dove andrà salvata la foto scattata
     private boolean mFlashSupported; //??
 
@@ -101,14 +98,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         takePictureButton.setOnClickListener(this);
     }
 
-    /*  Metodo che instanzia una textureListener. Se esiste una Surface Texture disponibile
-        viene chiamato il metodo openCamera() per aprire la fotocamera. */
-
-
+    //Inizializzo i callback e l'imageListener
     private final CameraStateCallback cameraStateCallback = new CameraStateCallback();
+    SessionStateCallback sessionStateCallback = new SessionStateCallback();
     CaptureCallback captureCallback = new CaptureCallback();
     ImageListener imageListener = new ImageListener();
-    SessionStateCallback sessionStateCallback = new SessionStateCallback(); //crea la callback per lo stato della CaptureSession
 
 
 
@@ -117,26 +111,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.e(TAG, "cameraDevice is null");
             return;
         }
+        int rotation = getWindowManager().getDefaultDisplay().getRotation();
         manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE); //Instanzio un camera manager, castando come Camera Manager il servizio CAMERA di android
 
         try {
             characteristics = manager.getCameraCharacteristics(cameraDevice.getId()); //Prendo le caratteristiche della camera tramite il suo ID (??)
-            ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
-            Surface readerSurface = reader.getSurface(); //surface dell'ImageReader (Mostra la foto quando è scattata)
 
-
-            captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            captureRequestBuilder.addTarget(readerSurface);
-            captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO); //Non voglio controllare i metadati
-
-            // Orientation
-            int rotation = getWindowManager().getDefaultDisplay().getRotation();
-            captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
+            pictureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+            pictureRequestBuilder.addTarget(imageReader.getSurface());
+            pictureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO); //Non voglio controllare i metadati
+            pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation)); //Setto la rotazione come quella del telefono
 
             createFilePhoto(); //Chiama il metodo per creare il file dove salvare la foto
-
-            reader.setOnImageAvailableListener(imageListener, null);
-            cameraDevice.createCaptureSession(Arrays.asList(readerSurface), sessionStateCallback, null); //crea la CaptureSession
+            imageReader.setOnImageAvailableListener(imageListener, null);
+            captureSession.capture(pictureRequestBuilder.build(), captureCallback, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -145,27 +133,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void createCameraPreview() {
         try {
             SurfaceTexture texture = textureView.getSurfaceTexture(); //Prende la SurfaceTexture della textureView (dove viene visualizzata l'anteprima nel .xml)
+            assert texture != null;
             texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
             Surface previewSurface = new Surface(texture);
-            captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            captureRequestBuilder.addTarget(previewSurface);
-            cameraDevice.createCaptureSession(Arrays.asList(previewSurface), new CameraCaptureSession.StateCallback() { //Crea la capture session
-                @Override
-                public void onConfigured(CameraCaptureSession cameraCaptureSession) {
-                    //The camera is already closed
-                    if (null == cameraDevice) {
-                        return;
-                    }
-                    // When the session is ready, we start displaying the preview.
-                    cameraCaptureSessions = cameraCaptureSession;
-                    updatePreview();
-                }
+            Surface readerSurface = imageReader.getSurface();
 
-                @Override
-                public void onConfigureFailed(CameraCaptureSession cameraCaptureSession) {
-                    Toast.makeText(MainActivity.this, "Configuration change", Toast.LENGTH_SHORT).show();
-                }
-            }, null);
+            previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW); //Creo la CaptureRequest da passare alla sessione per mostrare la preview della camera
+            previewRequestBuilder.addTarget(previewSurface);
+
+            cameraDevice.createCaptureSession(Arrays.asList(previewSurface,readerSurface), sessionStateCallback, null);
         } catch (CameraAccessException e) {
             finish();
             e.printStackTrace();
@@ -177,6 +153,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         viene chiusa immediatamente se non si danno i permessi, non è necessario controllarli
         nuovamente, per cui ignoro il warning.
      */
+
+    //TODO vedere openCamera
     @SuppressLint("MissingPermission")
     private void openCamera() {
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
@@ -187,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             assert map != null;
             imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
+            imageReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
             manager.openCamera(cameraId, cameraStateCallback, null);
 
         } catch (CameraAccessException e) {
@@ -195,18 +174,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.e(TAG, "openCamera X");
     }
 
+
+    //TODO vedere updatePreview
     protected void updatePreview() {
         if (null == cameraDevice) {
             Log.e(TAG, "updatePreview error, return");
         }
-        captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+        previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
         try {
-            cameraCaptureSessions.setRepeatingRequest(captureRequestBuilder.build(), null, null);
+            captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
     }
 
+    //TODO vedere closeCamera()
     private void closeCamera() {
         if (null != cameraDevice) {
             cameraDevice.close();
@@ -349,23 +331,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
     class SessionStateCallback extends CameraCaptureSession.StateCallback {
-        //A callback object for receiving updates about the state of a camera capture session.
+        //Callback usata per ottenere lo stato della CameraCaptureSession
 
         @Override
-        public void onConfigured(@NonNull CameraCaptureSession session) {
-            //This method is called when the camera device has finished configuring itself, and the session can start processing capture requests.
-            try {
-                session.capture(captureRequestBuilder.build(), captureCallback, null);
-            } catch (CameraAccessException e) {
-                e.printStackTrace();
+        public void onConfigured(CameraCaptureSession session) {
+            //The camera is already closed
+            if (null == cameraDevice) {
+                return;
             }
+            // When the session is ready, we start displaying the preview.
+            captureSession = session;
+            updatePreview();
         }
 
         @Override
-        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-
+        public void onConfigureFailed(CameraCaptureSession cameraCaptureSession) {
+            Toast.makeText(MainActivity.this, "Configuration change", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -379,16 +361,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         @Override
-        public void onDisconnected(@NonNull CameraDevice camera) {
-
-        }
+        public void onDisconnected(@NonNull CameraDevice camera) { }
 
         @Override
         public void onError(@NonNull CameraDevice camera, int error) {
 
         }
-
-
     }
 }
 
