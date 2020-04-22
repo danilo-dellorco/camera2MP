@@ -173,8 +173,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    //TODO vedere updatePreview
     protected void updatePreview() {
+        //Aggiorna costantemente la Preview, fornendo l'anteprima istante per istante della ripresa
         if (null == cameraDevice) {
             Log.e(TAG, "updatePreview error, return");
         }
@@ -186,7 +186,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    //TODO vedere closeCamera()
     private void closeCamera() {
         if (null != cameraDevice) {
             cameraDevice.close();
@@ -226,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         Log.e(TAG, "onPause");
-        //closeCamera();
+        closeCamera();
         super.onPause();
     }
 
@@ -336,11 +335,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onConfigured(CameraCaptureSession session) {
-            //The camera is already closed
+            //Se la camera è già chiusa retrurn
             if (null == cameraDevice) {
                 return;
             }
-            // When the session is ready, we start displaying the preview.
+            // Quando la sessione è pronta, viene mostrata l'anteprima a schermo tramite il metodo updatePreview();
             captureSession = session;
             updatePreview();
         }
@@ -359,14 +358,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             cameraDevice = camera;
             createCameraPreview();
         }
-
         @Override
-        public void onDisconnected(@NonNull CameraDevice camera) { }
-
+        public void onDisconnected(@NonNull CameraDevice camera) {}
         @Override
-        public void onError(@NonNull CameraDevice camera, int error) {
-
-        }
+        public void onError(@NonNull CameraDevice camera, int error) {}
     }
 }
 
