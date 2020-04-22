@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         e.printStackTrace();
                     }
                 }
-
+//
                 @Override
                 public void onConfigureFailed(CameraCaptureSession session) {
                 }
