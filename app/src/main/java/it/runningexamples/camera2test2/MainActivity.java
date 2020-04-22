@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     };
 
     private static final String TAG = "AndroidCameraApi";
+    private static final String TAG2 = "Permessi";
     private Button takePictureButton;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -90,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         //Controlla i permessi all'avvio.
         if (!hasPermissions(this, PERMISSIONS)) {
+            Log.d(TAG2, "Chiedo permessi");
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         } else {
             textureListener = new TextureListener();
@@ -292,7 +294,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_ALL:
-                if (grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
+                Log.d(TAG2, String.valueOf(grantResults[1]));
+                if (grantResults.length>0 && (grantResults[1] == PackageManager.PERMISSION_DENIED || grantResults[0] == PackageManager.PERMISSION_DENIED)){
                 Toast.makeText(MainActivity.this, "Devi fornire i permessi per utilizzare l'app!", Toast.LENGTH_LONG).show();
                 finish();
             }
@@ -324,14 +327,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public static boolean hasPermissions(Context context, String[] permissions) {
+        boolean garanted = true;
         if (context != null && permissions != null) {
             for (String permission : permissions) {
+                Log.d(TAG2, "Check "+permission);
                 if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
+                    Log.d(TAG2, permission + " Not garanted");
+                    garanted = false;
+                    Log.d(TAG2, "Garanted = "+garanted);
                 }
             }
         }
-        return true;
+        return garanted;
     }
 
     private void createFilePhoto(){
