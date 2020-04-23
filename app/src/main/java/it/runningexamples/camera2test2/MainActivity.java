@@ -46,6 +46,8 @@ import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PERMISSION_ALL = 1;
+    private static final String CAMERA_FRONT = "1";
+    private static final String CAMERA_BACK = "0";
     String[] PERMISSIONS = {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.CAMERA
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "AndroidCameraApi";
     private static final String TAG2 = "Permessi";
     private ImageButton takePictureButton;
+    private Button btnFlip;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
@@ -98,6 +101,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         textureView.setSurfaceTextureListener(textureListener);
         takePictureButton = findViewById(R.id.btn_takepicture);
         takePictureButton.setOnClickListener(this);
+        btnFlip = findViewById(R.id.btn_Flip);
+        btnFlip.setOnClickListener(this);
+
+        cameraId = CAMERA_BACK;         // apre camera frontale all'avvio
     }
 
     //Inizializzo i callback e l'imageListener
@@ -107,6 +114,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ImageListener imageListener = new ImageListener();
 
 
+   public void switchCamera() {
+        if (cameraId.equals(CAMERA_FRONT)) {
+            cameraId = CAMERA_BACK;
+            closeCamera();
+            openCamera();
+
+        } else if (cameraId.equals(CAMERA_BACK)) {
+            cameraId = CAMERA_FRONT;
+            closeCamera();
+            openCamera();
+        }
+    }
 
     protected void takePicture() { //Metodo che scatta e salva una foto
         if (null == cameraDevice) {
@@ -160,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         Log.e(TAG, "is camera open");
         try {
-            cameraId = manager.getCameraIdList()[0]; //Prende il cameraId della fotocamera principale del telefono
+//            cameraId = manager.getCameraIdList()[0]; //Prende il cameraId della fotocamera principale del telefono
             characteristics = manager.getCameraCharacteristics(cameraId); //Ottengo le caratteristiche della fotocamera principale tramite il suo cameraId
 
             //Ottiene una StreamConfigurationMap dalle carachteristics della camera. contiene tutte le configurazioni di streaming disponibili supportate dal cameraDevice;
@@ -232,7 +251,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        takePicture();
+        if (v.getId() == R.id.btn_takepicture) {
+            takePicture();
+        }
+        if (v.getId() == R.id.btn_Flip){
+            switchCamera();
+        }
     }
 
     public static boolean hasPermissions(Context context, String[] permissions) {
