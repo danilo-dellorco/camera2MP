@@ -178,8 +178,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         Log.e(TAG, "is camera open");
         try {
-//            cameraId = manager.getCameraIdList()[0]; //Prende il cameraId della fotocamera principale del telefono
-            characteristics = manager.getCameraCharacteristics(cameraId); //Ottengo le caratteristiche della fotocamera principale tramite il suo cameraId
+            characteristics = manager.getCameraCharacteristics(cameraId); //Ottengo le caratteristiche della fotocamera attuale tramite il suo cameraId
 
             //Ottiene una StreamConfigurationMap dalle carachteristics della camera. contiene tutte le configurazioni di streaming disponibili supportate dal cameraDevice;
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
