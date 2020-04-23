@@ -43,7 +43,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-
+//TODO sistemare immagine capovolta fotocamera frontale
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PERMISSION_ALL = 1;
     private static final String CAMERA_FRONT = "1";
