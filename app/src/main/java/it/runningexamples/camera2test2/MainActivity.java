@@ -55,8 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = "AndroidCameraApi";
     private static final String TAG2 = "Permessi";
-    private ImageButton takePictureButton;
-    private Button btnFlip;
+    private ImageButton takePictureButton,btnFlip;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
