@@ -1,4 +1,4 @@
-package it.runningexamples.camera2test2;
+package it.runningexamples.recamera2;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -25,7 +25,6 @@ import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
