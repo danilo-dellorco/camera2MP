@@ -125,7 +125,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    protected void takePicture() { //Metodo che scatta e salva una foto
+    // JPEG_ORIENTATION -> Se LENS_FACING_FRONT l'immagine jpeg deve essere ruotata rispetto all'orientamento della fotocamera.
+    // Dipende dalle caratteristiche del dispositivo.
+    private int getJpegOrientation(CameraCharacteristics c, int deviceOrientation) {
+        if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN) return 0;
+        int sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION);
+
+        // Round device orientation to a multiple of 90
+        deviceOrientation = (deviceOrientation + 45) / 90 * 90;
+
+        // se si tratta della fotocamera frontale -> ruota
+        boolean facingFront = c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT;
+        if (facingFront) deviceOrientation = -deviceOrientation;
+
+        // Calcolo orientamento rispetto alla fotocamera
+        int jpegOrientation = (sensorOrientation + deviceOrientation + 360) % 360;
+
+        return jpegOrientation;
+    }
+
+    protected void takePicture() throws CameraAccessException { //Metodo che scatta e salva una foto            // throws CameraAccessException imposta da getOrientantion()
         if (null == cameraDevice) {
             Log.e(TAG, "cameraDevice is null");
             return;
@@ -139,8 +158,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             pictureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             pictureRequestBuilder.addTarget(imageReader.getSurface());
             pictureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO); //Non voglio controllare i metadati
-            pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation)); //Setto la rotazione come quella del telefono
 
+            pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(characteristics, rotation));
             createFilePhoto(); //Chiama il metodo per creare il file dove salvare la foto
             imageReader.setOnImageAvailableListener(imageListener, null);
             captureSession.capture(pictureRequestBuilder.build(), captureCallback, null);
@@ -249,7 +268,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.btn_takepicture) {
-            takePicture();
+            try {
+                takePicture();
+            } catch (CameraAccessException e) {         // imposti da getOrientantion
+                e.printStackTrace();
+            }
         }
         if (v.getId() == R.id.btn_Flip){
             switchCamera();
