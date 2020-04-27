@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     // JPEG_ORIENTATION -> Se LENS_FACING_FRONT l'immagine jpeg deve essere ruotata rispetto all'orientamento della fotocamera.
-    // Dipende dalle caratteristiche del dispositivo.
+    // Dipende dalle caratteristiche del dispositivo. https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics#SENSOR_ORIENTATION
     private int getJpegOrientation(CameraCharacteristics c, int deviceOrientation) {
         if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN) return 0;
         int sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION);
