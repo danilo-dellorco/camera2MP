@@ -1,4 +1,4 @@
-package it.runningexamples.camera2test2;
+package it.runningexamples.recamera2;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -25,7 +25,6 @@ import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -43,7 +42,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-
+//TODO sistemare immagine capovolta fotocamera frontale
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PERMISSION_ALL = 1;
     private static final String CAMERA_FRONT = "1";
@@ -178,8 +177,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         Log.e(TAG, "is camera open");
         try {
-//            cameraId = manager.getCameraIdList()[0]; //Prende il cameraId della fotocamera principale del telefono
-            characteristics = manager.getCameraCharacteristics(cameraId); //Ottengo le caratteristiche della fotocamera principale tramite il suo cameraId
+            characteristics = manager.getCameraCharacteristics(cameraId); //Ottengo le caratteristiche della fotocamera attuale tramite il suo cameraId
 
             //Ottiene una StreamConfigurationMap dalle carachteristics della camera. contiene tutte le configurazioni di streaming disponibili supportate dal cameraDevice;
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);

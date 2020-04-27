@@ -5,7 +5,7 @@ android {
     buildToolsVersion "29.0.3"
 
     defaultConfig {
-        applicationId "it.runningexamples.camera2test2"
+        applicationId "it.runningexamples.recamera2"
         minSdkVersion 25
         targetSdkVersion 29
         versionCode 1
