@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Camera;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -81,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private Size imageDimension;
     private File file; //File dove andrà salvata la foto scattata
-    private boolean mFlashSupported; //??
+    private boolean flashMode; //??
 
     TextureListener textureListener;
 
@@ -157,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             pictureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             pictureRequestBuilder.addTarget(imageReader.getSurface());
+
             pictureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO); //Non voglio controllare i metadati
 
             pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(characteristics, rotation));
@@ -215,7 +217,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (null == cameraDevice) {
             Log.e(TAG, "updatePreview error, return");
         }
-        previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO); //Builder della richiesta di preview
+        previewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_MODE_AUTO); //Builder della richiesta di preview
+
         try {
             captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null); //Richiede l'acquisizione ripetuta infinita di immagini da questa sessione. Permette di aggiornare continuamente l'immagine vista sulla surface.
         } catch (CameraAccessException e) {
@@ -240,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (requestCode) {
             case PERMISSION_ALL:
                 if (grantResults.length > 0 && (grantResults[0] == PackageManager.PERMISSION_DENIED || grantResults[1] == PackageManager.PERMISSION_DENIED)) {
-                    Toast.makeText(MainActivity.this, "Devi fornire i permessi per utilizzare l'app!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.givePermission), Toast.LENGTH_LONG).show();
                     finish();
                 }
         }
@@ -270,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (v.getId() == R.id.btn_takepicture) {
             takePicture();
         }
-        if (v.getId() == R.id.btn_Flip){
+        if (v.getId() == R.id.btn_Flip) {
             switchCamera();
         }
     }
@@ -370,7 +373,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
-            Toast.makeText(MainActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, getString(R.string.save) + file, Toast.LENGTH_SHORT).show();
             createCameraPreview();
         }
     }
@@ -391,7 +394,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onConfigureFailed(CameraCaptureSession cameraCaptureSession) {
-            Toast.makeText(MainActivity.this, "Configuration change", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, getString(R.string.configuration), Toast.LENGTH_SHORT).show();
         }
     }
 

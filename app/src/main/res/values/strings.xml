@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">RE Camera2</string>
     <string name="app_label">Running Examples Camera2</string>
+    <string name="givePermission">Devi fornire i permessi per utilizzare l\'app!</string>
+    <string name="save">Salvata in:</string>
+    <string name="configuration">Configurazione modificata</string>
 </resources>
