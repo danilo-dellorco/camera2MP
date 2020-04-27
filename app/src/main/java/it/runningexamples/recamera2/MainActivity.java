@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return jpegOrientation;
     }
 
-    protected void takePicture() throws CameraAccessException { //Metodo che scatta e salva una foto            // throws CameraAccessException imposta da getOrientantion()
+    protected void takePicture() { //Metodo che scatta e salva una foto            // throws CameraAccessException imposta da getOrientantion()
         if (null == cameraDevice) {
             Log.e(TAG, "cameraDevice is null");
             return;
@@ -268,11 +268,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.btn_takepicture) {
-            try {
-                takePicture();
-            } catch (CameraAccessException e) {         // imposti da getOrientantion
-                e.printStackTrace();
-            }
+            takePicture();
         }
         if (v.getId() == R.id.btn_Flip){
             switchCamera();
