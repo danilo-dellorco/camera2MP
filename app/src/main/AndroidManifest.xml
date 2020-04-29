@@ -14,9 +14,16 @@
     android:supportsRtl="true"
     android:theme="@style/AppTheme"
         tools:targetApi="q">
-    <activity android:name=".MainActivity" android:label="@string/app_label">
+    <activity android:name=".MainActivity"
+        android:label="@string/app_label"
+        android:screenOrientation="locked"
+        android:configChanges="orientation"
+        >
     </activity>
-        <activity android:name=".SplashActivity" android:theme="@style/SplashTheme">
+        <activity android:name=".SplashActivity"
+            android:screenOrientation="locked"
+            android:configChanges="orientation"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
