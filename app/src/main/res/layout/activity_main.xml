@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+    android:background="@color/colorPrimaryDark"
     tools:context="it.runningexamples.recamera2.MainActivity">
 
     <TextureView
         android:id="@+id/texture"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
         android:layout_alignParentTop="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:background="@color/colorPrimaryDark"
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
         android:layout_height="150dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        >
 
         <ImageButton
             android:id="@+id/btn_Flip"
@@ -39,14 +43,12 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="80dp"
             android:layout_marginRight="80dp"
-
             android:background="@drawable/round_capture_button" />
 
         <ImageButton
             android:id="@+id/btn_settings"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_weight="1"
             android:background="@drawable/settings_button"
             android:scaleType="fitCenter" />
     </LinearLayout>
