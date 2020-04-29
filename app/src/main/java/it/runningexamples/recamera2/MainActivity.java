@@ -160,12 +160,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         try {
             characteristics = manager.getCameraCharacteristics(cameraDevice.getId()); //Prendo le caratteristiche della camera tramite il suo ID (??)
-
             pictureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             pictureRequestBuilder.addTarget(imageReader.getSurface());
-
             pictureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO); //Non voglio controllare i metadati
-
             pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(characteristics, rotation));
             createFilePhoto(); //Chiama il metodo per creare il file dove salvare la foto
             imageReader.setOnImageAvailableListener(imageListener, null);
@@ -182,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
             Surface previewSurface = new Surface(texture);
             Surface readerSurface = imageReader.getSurface();
+            cameraDevice.createCaptureSession(Arrays.asList(previewSurface,readerSurface), sessionStateCallback, null);
             previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW); //Creo la CaptureRequest da passare alla sessione per mostrare la preview della camera
             previewRequestBuilder.addTarget(previewSurface);
         } catch (CameraAccessException e) {
