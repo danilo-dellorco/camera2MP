@@ -22,9 +22,12 @@ import android.os.Environment;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -177,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Surface readerSurface = imageReader.getSurface();
             previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW); //Creo la CaptureRequest da passare alla sessione per mostrare la preview della camera
             previewRequestBuilder.addTarget(previewSurface);
-            cameraDevice.createCaptureSession(Arrays.asList(previewSurface,readerSurface), sessionStateCallback, null);
         } catch (CameraAccessException e) {
             finish();
             e.printStackTrace();
@@ -268,12 +270,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.btn_takepicture) {
+            Animation anim_zoomIn = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.zoom_in);
+            Animation anim_zoomOut = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.zoom_out);
+            takePictureButton.startAnimation(anim_zoomIn);
+            takePictureButton.startAnimation(anim_zoomOut);
             takePicture();
         }
         if (v.getId() == R.id.btn_Flip){
             switchCamera();
         }
     }
+
+
 
     public static boolean hasPermissions(Context context, String[] permissions) {
         boolean garanted = true;
