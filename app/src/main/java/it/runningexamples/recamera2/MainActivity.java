@@ -18,8 +18,6 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
-import android.media.MediaScannerConnection;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -87,12 +85,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int height = 480;
 
     private Size imageDimension;
-    private File folder;
     private File file; //File dove andrà salvata la foto scattata
     private boolean flashMode; //??
-    TextureListener textureListener;
 
-    int lastPic;
+    TextureListener textureListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,9 +100,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        folder = new File(Environment.getExternalStorageDirectory() +
-                File.separator + "camera2photos");
-
         textureView = findViewById(R.id.texture);
         textureView.setSurfaceTextureListener(textureListener);
         takePictureButton = findViewById(R.id.btn_takepicture);
@@ -291,11 +284,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             switchCamera();
         }
         if (v.getId() == R.id.btn_settings){
-            File[] allFiles = folder.listFiles();
-            lastPic = allFiles.length-1;
-            new SingleMediaScanner(this,allFiles[lastPic]);
+            startActivity(new Intent(MainActivity.this,ActivityPop.class));
         }
     }
+
+
 
     public static boolean hasPermissions(Context context, String[] permissions) {
         boolean garanted = true;
@@ -319,8 +312,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!folder.exists()) {
             folder.mkdirs(); //crea la directory delle foto se questa non esiste
         }
-        lastPic = folder.listFiles().length;
-        String path = Environment.getExternalStorageDirectory() + "/camera2photos/pic" + Integer.toString(lastPic);
+        String lastPic = Integer.toString(folder.listFiles().length);
+        String path = Environment.getExternalStorageDirectory() + "/camera2photos/pic" + lastPic;
         file = new File(path + ".jpg");
         int num = 1;
         while (file.exists()) {
@@ -431,31 +424,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onError(@NonNull CameraDevice camera, int error) {}
     }
-
-    public class SingleMediaScanner implements MediaScannerConnection.MediaScannerConnectionClient { //Mostra una foto scattata
-
-        private MediaScannerConnection mMs;
-        private File mFile;
-
-        public SingleMediaScanner(Context context, File f) {
-            mFile = f;
-            mMs = new MediaScannerConnection(context, this);
-            mMs.connect();
-        }
-
-        public void onMediaScannerConnected() {
-            mMs.scanFile(mFile.getAbsolutePath(), null);
-        }
-
-        @Override
-        public void onScanCompleted(String path, Uri uri) {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(uri);
-            startActivity(intent);
-            mMs.disconnect();
-        }
-    }
-
 }
 
 
