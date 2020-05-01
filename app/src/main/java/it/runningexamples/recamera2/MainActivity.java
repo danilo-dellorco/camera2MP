@@ -25,6 +25,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
+import android.view.MenuInflater;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -32,6 +33,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -301,7 +303,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             lastPic = allFiles.length-1;
             new SingleMediaScanner(this,allFiles[lastPic]);
         }
+        if (v.getId() == R.id.btnFlash){
             btnFlash.startAnimation(anim_button);
+            showPopup(v,R.menu.menu_effects);
+        }
+
+
     }
 
     public static boolean hasPermissions(Context context, String[] permissions) {
@@ -461,6 +468,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(intent);
             mMs.disconnect();
         }
+    }
+
+    public void showPopup(View v,int menu) {
+        PopupMenu popup = new PopupMenu(this, v);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(menu,popup.getMenu());
+        popup.show();
     }
 
 }
