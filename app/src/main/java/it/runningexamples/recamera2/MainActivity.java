@@ -30,15 +30,12 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-
-
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -61,7 +58,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = "AndroidCameraApi";
     private static final String TAG2 = "Permessi";
-    private ImageButton takePictureButton,btnFlip,btnSettings;
+    private ImageButton takePictureButton,btnFlip,btnGallery;
+    private Button btnFlash;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
@@ -110,9 +108,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         textureView = findViewById(R.id.texture);
         textureView.setSurfaceTextureListener(textureListener);
         takePictureButton = findViewById(R.id.btn_takepicture);
-        btnSettings = findViewById(R.id.btn_settings);
-        btnSettings.setOnClickListener(this);
+        btnGallery = findViewById(R.id.btn_gallery);
+        btnFlash = findViewById(R.id.btnFlash);
+        btnGallery.setOnClickListener(this);
         takePictureButton.setOnClickListener(this);
+        btnFlash.setOnClickListener(this);
         btnFlip = findViewById(R.id.btn_Flip);
         btnFlip.setOnClickListener(this);
         cameraId = CAMERA_BACK;         // apre camera frontale all'avvio
@@ -169,7 +169,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             characteristics = manager.getCameraCharacteristics(cameraDevice.getId()); //Prendo le caratteristiche della camera tramite il suo ID (??)
             pictureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             pictureRequestBuilder.addTarget(imageReader.getSurface());
-            pictureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO); //Non voglio controllare i metadati
+            //pictureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO); //Non voglio controllare i metadati.
+
+            //pictureRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION,)
             pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(characteristics, rotation));
             createFilePhoto(); //Chiama il metodo per creare il file dove salvare la foto
             imageReader.setOnImageAvailableListener(imageListener, null);
@@ -227,7 +229,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (null == cameraDevice) {
             Log.e(TAG, "updatePreview error, return");
         }
-        previewRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE, CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE); //Builder della richiesta di preview
+        //(previewRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE, CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE); //Builder della richiesta di preview
+        previewRequestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_SINGLE); //Attiva il flash
+        //previewRequestBuilder.set(CaptureRequest.NOISE_REDUCTION_MODE, CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY);
 
         try {
             captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null); //Richiede l'acquisizione ripetuta infinita di immagini da questa sessione. Permette di aggiornare continuamente l'immagine vista sulla surface.
@@ -280,21 +284,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+        Animation anim_button = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.bar_button_click);
+        Animation anim_photo = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.photo_button_click);
+
         if (v.getId() == R.id.btn_takepicture) {
-            Animation anim_zoomIn = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.zoom_in);
-            Animation anim_zoomOut = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.zoom_out);
-            takePictureButton.startAnimation(anim_zoomIn);
-            takePictureButton.startAnimation(anim_zoomOut);
+            takePictureButton.startAnimation(anim_photo);
             takePicture();
         }
         if (v.getId() == R.id.btn_Flip) {
             switchCamera();
+            btnFlip.startAnimation(anim_button);
         }
-        if (v.getId() == R.id.btn_settings){
+        if (v.getId() == R.id.btn_gallery){
+            btnGallery.startAnimation(anim_button);
             File[] allFiles = folder.listFiles();
             lastPic = allFiles.length-1;
             new SingleMediaScanner(this,allFiles[lastPic]);
         }
+            btnFlash.startAnimation(anim_button);
     }
 
     public static boolean hasPermissions(Context context, String[] permissions) {

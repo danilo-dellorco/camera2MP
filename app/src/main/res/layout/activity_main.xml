@@ -4,37 +4,77 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/colorPrimaryDark"
+    android:orientation="vertical"
     tools:context="it.runningexamples.recamera2.MainActivity">
+
+    <LinearLayout
+        android:gravity="center"
+        android:id="@+id/linearLayoutTop"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Button
+            android:id="@+id/btnEffects"
+            android:layout_width="wrap_content"
+            android:textSize="10dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Effects" />
+
+        <Button
+            android:id="@+id/btnColorCorrection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="color corr."
+            android:textSize="10dp" />
+
+        <Button
+            android:textSize="10dp"
+            android:id="@+id/btnNoiseReduction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Noise Red." />
+
+        <Button
+            android:id="@+id/btnFlash"
+            android:textSize="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Flash" />
+    </LinearLayout>
 
     <TextureView
         android:id="@+id/texture"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_alignParentTop="true"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayoutBottom"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutTop" />
 
     <LinearLayout
-        android:background="@color/colorPrimaryDark"
-        android:id="@+id/linearLayout"
+        android:id="@+id/linearLayoutBottom"
         android:layout_width="match_parent"
         android:layout_height="150dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        >
+        app:layout_constraintStart_toStartOf="parent">
 
         <ImageButton
             android:id="@+id/btn_Flip"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/switch_camera_button"
+            android:background="@drawable/switch_camera"
             android:scaleType="fitCenter" />
 
         <ImageButton
@@ -46,10 +86,10 @@
             android:background="@drawable/round_capture_button" />
 
         <ImageButton
-            android:id="@+id/btn_settings"
+            android:id="@+id/btn_gallery"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/gallery_button"
+            android:background="@drawable/gallery"
             android:scaleType="fitCenter" />
     </LinearLayout>
 
