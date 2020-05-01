@@ -15,6 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:targetApi="q">
+        <activity android:name=".ActivityPop" android:theme = "@style/PopupTheme"></activity>
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation"
