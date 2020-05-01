@@ -3,8 +3,8 @@ package it.runningexamples.recamera2;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Camera;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -23,7 +23,6 @@ import android.os.Environment;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
-import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -60,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = "AndroidCameraApi";
     private static final String TAG2 = "Permessi";
-    private ImageButton takePictureButton,btnFlip;
+    private ImageButton takePictureButton,btnFlip,btnSettings;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
@@ -104,10 +103,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         textureView = findViewById(R.id.texture);
         textureView.setSurfaceTextureListener(textureListener);
         takePictureButton = findViewById(R.id.btn_takepicture);
+        btnSettings = findViewById(R.id.btn_settings);
+        btnSettings.setOnClickListener(this);
         takePictureButton.setOnClickListener(this);
         btnFlip = findViewById(R.id.btn_Flip);
         btnFlip.setOnClickListener(this);
-
         cameraId = CAMERA_BACK;         // apre camera frontale all'avvio
     }
 
@@ -180,7 +180,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Surface previewSurface = new Surface(texture);
             Surface readerSurface = imageReader.getSurface();
             cameraDevice.createCaptureSession(Arrays.asList(previewSurface,readerSurface), sessionStateCallback, null);
-            previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW); //Creo la CaptureRequest da passare alla sessione per mostrare la preview della camera
+            Log.v ("CFG","Created Capture Session");
+            previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW); //Creo il builder della CaptureRequest da passare alla sessione per mostrare la preview della camera
             previewRequestBuilder.addTarget(previewSurface);
         } catch (CameraAccessException e) {
             finish();
@@ -219,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (null == cameraDevice) {
             Log.e(TAG, "updatePreview error, return");
         }
-        previewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_MODE_AUTO); //Builder della richiesta di preview
+        previewRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE, CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE); //Builder della richiesta di preview
 
         try {
             captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null); //Richiede l'acquisizione ripetuta infinita di immagini da questa sessione. Permette di aggiornare continuamente l'immagine vista sulla surface.
@@ -281,6 +282,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if (v.getId() == R.id.btn_Flip) {
             switchCamera();
+        }
+        if (v.getId() == R.id.btn_settings){
+            startActivity(new Intent(MainActivity.this,ActivityPop.class));
         }
     }
 
@@ -391,11 +395,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onConfigured(CameraCaptureSession session) {
+            Log.v ("CFG","ONCONFIGURED");
             //Se la camera è già chiusa retrurn
             if (null == cameraDevice) {
                 return;
             }
-            // Quando la sessione è pronta, viene mostrata l'anteprima a schermo tramite il metodo updatePreview();
+            //Se il cameraDevice è pronto sessione è pronta, viene mostrata l'anteprima a schermo tramite il metodo updatePreview();
             captureSession = session;
             updatePreview();
         }
