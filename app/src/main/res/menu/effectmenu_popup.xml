@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <item android:id="@+id/effectOff"
+        android:title="None"/>
     <item android:id="@+id/negative"
         android:title="Negative"/>
     <item android:id="@+id/sepia"

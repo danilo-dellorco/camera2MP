@@ -25,6 +25,7 @@ import android.os.Environment;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -47,8 +48,17 @@ import java.util.Arrays;
 //TODO Internazionalizzazione
 //TODO Implementare effetti e filtri tramite onItemClicked
 //TODO Prendere risoluzione fotocamera e togliere 640x480
+//TODO Stringhe e cazzi vari  dentro res
+//TODO quando switchi la camera si perdono tutte le impostazioni di filtri e effetti
+
+
 
 public class MainActivity extends AppCompatActivity{
+    private static final CaptureRequest.Key<Integer> EFFECT = CaptureRequest.CONTROL_EFFECT_MODE;
+    private static final CaptureRequest.Key<Integer> COLOR = CaptureRequest.CONTROL_EFFECT_MODE;
+    private static final CaptureRequest.Key<Integer> NOISE = CaptureRequest.CONTROL_EFFECT_MODE;
+    private static final CaptureRequest.Key<Integer> FLASH = CaptureRequest.CONTROL_EFFECT_MODE;
+
     private static final int PERMISSION_ALL = 1;
     private static final String CAMERA_FRONT = "1";
     private static final String CAMERA_BACK = "0";
@@ -101,10 +111,12 @@ public class MainActivity extends AppCompatActivity{
         cameraId = CAMERA_BACK;         // apre camera frontale all'avvio
     }
 
-    public class Holder implements View.OnClickListener{
+    public class Holder implements View.OnClickListener,PopupMenu.OnMenuItemClickListener{
         Animation anim_button,anim_photo;
+        int menuClicked;
         private ImageButton takePictureButton, btnFlip, btnGallery;
         private Button btnFlash, btnColorCorrection, btnEffects, btnNoise;
+        private PopupMenu menuEffects,menuNoise,menuColor,menuFlash;
 
         Holder(){
             anim_photo = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.photo_button_click);
@@ -118,8 +130,12 @@ public class MainActivity extends AppCompatActivity{
             btnFlip = findViewById(R.id.btn_Flip);
             btnEffects = findViewById(R.id.btnEffects);
             btnColorCorrection = findViewById(R.id.btnColorCorrection);
-
             textureView.setSurfaceTextureListener(textureListener);
+            menuEffects = createPopup(btnEffects,R.menu.effectmenu_popup);
+            menuColor = createPopup(btnColorCorrection,R.menu.colorcorrection_popup);
+            menuNoise = createPopup(btnNoise,R.menu.noisereduction_popup);
+            menuFlash = createPopup(btnFlash,R.menu.flashmenu_popup);
+
             btnColorCorrection.setOnClickListener(this);
             btnEffects.setOnClickListener(this);
             btnNoise.setOnClickListener(this);
@@ -127,6 +143,10 @@ public class MainActivity extends AppCompatActivity{
             btnGallery.setOnClickListener(this);
             takePictureButton.setOnClickListener(this);
             btnFlash.setOnClickListener(this);
+            menuEffects.setOnMenuItemClickListener(this);
+            menuColor.setOnMenuItemClickListener(this);
+            menuNoise.setOnMenuItemClickListener(this);
+            menuFlash.setOnMenuItemClickListener(this);
         }
 
         @Override
@@ -151,20 +171,58 @@ public class MainActivity extends AppCompatActivity{
             }
             if (v.getId() == R.id.btnFlash) {
                 btnFlash.startAnimation(anim_button);
-                showPopup(v, R.menu.flashmenu_popup);
+                menuFlash.show();
+                menuClicked = R.id.btnFlash;
             }
             if (v.getId() == R.id.btnColorCorrection) {
                 btnColorCorrection.startAnimation(anim_button);
-                showPopup(v, R.menu.colorcorrection_popup);
+                menuColor.show();
+                menuClicked = R.id.btnColorCorrection;
+
             }
             if (v.getId() == R.id.btnEffects) {
                 btnEffects.startAnimation(anim_button);
-                showPopup(v, R.menu.menu_effects);
+                menuEffects.show();
+                menuClicked = R.id.btnEffects;
             }
             if (v.getId() == R.id.btnNoiseReduction) {
                 btnNoise.startAnimation(anim_button);
-                showPopup(v, R.menu.noisereduction_popup);
+                menuNoise.show();
+                menuClicked = R.id.btnNoiseReduction;
             }
+        }
+
+        @Override
+        //TODO se clicco negative mette filtro aqua
+        public boolean onMenuItemClick(MenuItem item) {
+            switch (item.getItemId()){
+                case R.id.negative:
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE);
+                    return true;
+                case R.id.aqua:
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_AQUA);
+                    return true;
+                case R.id.solarize:
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SOLARIZE);
+                    return true;
+                case R.id.blackboard:
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_BLACKBOARD);
+                    return true;
+                case R.id.sepia:
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SEPIA);
+                    return true;
+                case R.id.posterize:
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_POSTERIZE);
+                    return true;
+                case R.id.whiteboard:
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_WHITEBOARD);
+                    return true;
+                case R.id.effectOff:
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_OFF);
+            }
+
+
+            return false;
         }
     }
 
@@ -177,15 +235,19 @@ public class MainActivity extends AppCompatActivity{
 
 
     public void switchCamera() {
+        Animation animSwitch = AnimationUtils.loadAnimation(this,R.anim.switch_camera);
         if (cameraId.equals(CAMERA_FRONT)) {
             cameraId = CAMERA_BACK;
             closeCamera();
             openCamera();
+            textureView.startAnimation(animSwitch);
 
         } else if (cameraId.equals(CAMERA_BACK)) {
             cameraId = CAMERA_FRONT;
             closeCamera();
             openCamera();
+            textureView.startAnimation(animSwitch);
+
         }
     }
 
@@ -216,7 +278,6 @@ public class MainActivity extends AppCompatActivity{
             Surface previewSurface = new Surface(texture);
             Surface readerSurface = imageReader.getSurface();
             cameraDevice.createCaptureSession(Arrays.asList(previewSurface, readerSurface), sessionStateCallback, null);
-
             previewRequestBuilder.addTarget(previewSurface);
         } catch (CameraAccessException e) {
             finish();
@@ -235,7 +296,6 @@ public class MainActivity extends AppCompatActivity{
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
             characteristics = manager.getCameraCharacteristics(cameraId); //Ottengo le caratteristiche della fotocamera attuale tramite il suo cameraId
-
             //Ottiene una StreamConfigurationMap dalle carachteristics della camera. Contiene tutte le configurazioni di streaming disponibili supportate dal cameraDevice;
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             assert map != null;
@@ -270,6 +330,18 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    public PopupMenu createPopup(View v, int menu) {
+        PopupMenu popup = new PopupMenu(this, v);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(menu, popup.getMenu());
+        return popup;
+    }
+
+    private void setCameraPreference(CaptureRequest.Key<Integer> key,int value){
+        previewRequestBuilder.set(key,value);
+        pictureRequestBuilder.set(key,value);
+        updatePreview();
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -403,13 +475,6 @@ public class MainActivity extends AppCompatActivity{
             startActivity(intent);
             mMs.disconnect();
         }
-    }
-
-    public void showPopup(View v, int menu) { //Mostra il menu popup preso in input
-        PopupMenu popup = new PopupMenu(this, v);
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(menu, popup.getMenu());
-        popup.show();
     }
 
 }
