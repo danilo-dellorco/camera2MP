@@ -90,8 +90,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int height = 480;
 
     private Size imageDimension;
-    private File folder;
-    private File file; //File dove andrà salvata la foto scattata
+    private File folder,file;
     private boolean flashMode; //??
     TextureListener textureListener;
 
@@ -100,16 +99,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //Controlla i permessi all'avvio.
-        if (!hasPermissions(this, PERMISSIONS)) {
+        if (!CameraTools.hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         } else {
             textureListener = new TextureListener();
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        folder = new File(Environment.getExternalStorageDirectory() +
-                File.separator + "camera2photos");
-
+        folder = new File(Environment.getExternalStorageDirectory() + File.separator + "camera2photos");
         textureView = findViewById(R.id.texture);
         textureView.setSurfaceTextureListener(textureListener);
         takePictureButton = findViewById(R.id.btn_takepicture);
@@ -149,26 +146,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    // JPEG_ORIENTATION -> Se LENS_FACING_FRONT l'immagine jpeg deve essere ruotata rispetto all'orientamento della fotocamera.
-    // Dipende dalle caratteristiche del dispositivo. https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics#SENSOR_ORIENTATION
-    private int getJpegOrientation(CameraCharacteristics c, int deviceOrientation) {
-        if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN)
-            return 0;
-        int sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION);
-
-        // Round device orientation to a multiple of 90
-        deviceOrientation = (deviceOrientation + 45) / 90 * 90;
-
-        // se si tratta della fotocamera frontale -> ruota
-        boolean facingFront = c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT;
-        if (facingFront) deviceOrientation = -deviceOrientation;
-
-        // Calcolo orientamento rispetto alla fotocamera
-        int jpegOrientation = (sensorOrientation + deviceOrientation + 360) % 360;
-
-        return jpegOrientation;
-    }
-
     protected void takePicture() { //Metodo che scatta e salva una foto            // throws CameraAccessException imposta da getOrientantion()
         if (null == cameraDevice) {
             Log.e(TAG, "cameraDevice is null");
@@ -180,8 +157,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try {
             characteristics = manager.getCameraCharacteristics(cameraDevice.getId()); //Prendo le caratteristiche della camera tramite il suo ID (??)
             pictureRequestBuilder.addTarget(imageReader.getSurface());
-            pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(characteristics, rotation));
-            createFilePhoto(); //Chiama il metodo per creare il file dove salvare la foto
+            pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, CameraTools.getJpegOrientation(characteristics, rotation));
+            file = CameraTools.createFilePhoto(folder); //Chiama il metodo per creare il file dove salvare la foto
             imageReader.setOnImageAvailableListener(imageListener, null);
             captureSession.capture(pictureRequestBuilder.build(), captureCallback, null);
         } catch (CameraAccessException e) {
@@ -272,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         Log.e(TAG, "onResume");
-        if (textureView.isAvailable() && hasPermissions(MainActivity.this, PERMISSIONS)) {
+        if (textureView.isAvailable() && CameraTools.hasPermissions(MainActivity.this, PERMISSIONS)) {
             openCamera();
         } else {
             textureView.setSurfaceTextureListener(textureListener);
@@ -323,52 +300,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public static boolean hasPermissions(Context context, String[] permissions) {
-        boolean garanted = true;
-        if (context != null && permissions != null) {
-            for (String permission : permissions) {
-                Log.d(TAG2, "Check " + permission);
-                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG2, permission + " Not garanted");
-                    garanted = false;
-                    Log.d(TAG2, "Garanted = " + garanted);
-                }
-            }
-        }
-        return garanted;
-    }
-
-    private void createFilePhoto() {
-        // Crea il File dove salvare la foto scattata
-        File folder = new File(Environment.getExternalStorageDirectory() +
-                File.separator + "camera2photos");
-        if (!folder.exists()) {
-            folder.mkdirs(); //crea la directory delle foto se questa non esiste
-        }
-        lastPic = folder.listFiles().length;
-        String path = Environment.getExternalStorageDirectory() + "/camera2photos/pic" + lastPic;
-        file = new File(path + ".jpg");
-        int num = 1;
-        while (file.exists()) {
-            String N = "(" + num + ")";
-            file = new File(path + N + ".jpg");
-            num++;
-        }
-    }
-
-    private void save(byte[] bytes) throws IOException {
-        // Metodo di basso livello che salva il file attraverso uno Stream di bytes
-        OutputStream output = null;
-        try {
-            output = new FileOutputStream(file);
-            output.write(bytes);
-        } finally {
-            if (null != output) {
-                output.close();
-            }
-        }
-    }
-
     class TextureListener implements TextureView.SurfaceTextureListener {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -401,7 +332,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.capacity()];
                 buffer.get(bytes);
-                save(bytes); //chiama il metodo di basso livello che salva i bytes nel File creato
+                CameraTools.save(bytes,file); //chiama il metodo di basso livello che salva i bytes nel File creato
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -469,7 +400,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public class SingleMediaScanner implements MediaScannerConnection.MediaScannerConnectionClient { //Mostra una foto scattata
-
         private MediaScannerConnection mMs;
         private File mFile;
 
@@ -498,25 +428,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         inflater.inflate(menu, popup.getMenu());
         popup.show();
     }
-
-    /*public class CameraProperties {
-        int EFFECT,NOISE,COLOR,FLASH;
-        //CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE
-        //CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY
-        //CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_FAST
-        //CameraMetadata.COLOR_CORRECTION
-
-        public void setProperties(){
-            previewRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE,EFFECT);
-            previewRequestBuilder.set(CaptureRequest.NOISE_REDUCTION_MODE,NOISE);
-            previewRequestBuilder.set(CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE,COLOR);
-            previewRequestBuilder.set(CaptureRequest.FLASH_MODE,FLASH);
-            pictureRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE,EFFECT);
-            pictureRequestBuilder.set(CaptureRequest.NOISE_REDUCTION_MODE,NOISE);
-            pictureRequestBuilder.set(CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE,COLOR);
-            pictureRequestBuilder.set(CaptureRequest.FLASH_MODE,FLASH);
-        }
-    }*/
 
 }
 
