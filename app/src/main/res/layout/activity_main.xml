@@ -74,8 +74,7 @@
             android:id="@+id/btn_Flip"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/switch_camera"
-            android:scaleType="fitCenter" />
+            android:background="@drawable/switch_camera" />
 
         <ImageButton
             android:id="@+id/btn_takepicture"
@@ -89,8 +88,7 @@
             android:id="@+id/btn_gallery"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/gallery"
-            android:scaleType="fitCenter" />
+            android:background="@drawable/gallery" />
     </LinearLayout>
 
 
