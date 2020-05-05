@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Camera;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -49,7 +48,7 @@ import java.util.Arrays;
 
 //TODO sistemare immagine capovolta fotocamera frontale
 //TODO Naming convention
-//TODO dimension.xml (?)
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PERMISSION_ALL = 1;
     private static final String CAMERA_FRONT = "1";
@@ -62,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "AndroidCameraApi";
     private static final String TAG2 = "Permessi";
     private ImageButton takePictureButton,btnFlip,btnGallery;
-    private Button btnFlash;
+    private Button btnFlash, btnColorCorrection, btnEffects, btnNoise;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
@@ -82,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected CaptureRequest.Builder pictureRequestBuilder;
     protected CameraManager manager; //Gestisce tutti i cameraDevice e permette di ottenere i cameraCharacteristics di ognuno
     protected ImageReader imageReader; //Visualizza le foto una volta scattate
-    public CameraProperties properties;
+
 
     //Variabili immagine di output
     private static final int width = 640;
@@ -109,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         folder = new File(Environment.getExternalStorageDirectory() +
                 File.separator + "camera2photos");
 
-        properties = new CameraProperties();
         textureView = findViewById(R.id.texture);
         textureView.setSurfaceTextureListener(textureListener);
         takePictureButton = findViewById(R.id.btn_takepicture);
@@ -118,6 +116,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnGallery.setOnClickListener(this);
         takePictureButton.setOnClickListener(this);
         btnFlash.setOnClickListener(this);
+        btnNoise = findViewById(R.id.btnNoiseReduction);
+        btnNoise.setOnClickListener(this);
+        btnColorCorrection = findViewById(R.id.btnColorCorrection);
+        btnColorCorrection.setOnClickListener(this);
+        btnEffects = findViewById(R.id.btnEffects);
+        btnEffects.setOnClickListener(this);
         btnFlip = findViewById(R.id.btn_Flip);
         btnFlip.setOnClickListener(this);
         cameraId = CAMERA_BACK;         // apre camera frontale all'avvio
@@ -303,14 +307,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if (v.getId() == R.id.btnFlash){
             btnFlash.startAnimation(anim_button);
-            showPopup(v,R.menu.menu_effects);
-            properties.EFFECT = CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE;
-            properties.setProperties();
-            updatePreview();
-
+            showPopup(v,R.menu.flashmenu_popup);
         }
-
-
+        if (v.getId() == R.id.btnColorCorrection){
+            btnColorCorrection.startAnimation(anim_button);
+            showPopup(v, R.menu.colorcorrection_popup);
+        }
+        if (v.getId() == R.id.btnEffects){
+            btnEffects.startAnimation(anim_button);
+            showPopup(v, R.menu.menu_effects);
+        }
+        if (v.getId() == R.id.btnNoiseReduction){
+            btnNoise.startAnimation(anim_button);
+            showPopup(v, R.menu.noisereduction_popup);
+        }
     }
 
     public static boolean hasPermissions(Context context, String[] permissions) {

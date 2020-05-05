@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/yesFlash"
+        android:title="Si"/>
+    <item android:id="@+id/autoFlash"
+        android:title="Auto"/>
+    <item android:id="@+id/noFlash"
+        android:title="No"/>
+</menu>
