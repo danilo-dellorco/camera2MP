@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/offColor"
+        android:title="Off"/>
+    <item android:id="@+id/fastColor"
+        android:title="Fast"/>
+    <item android:id="@+id/highColor"
+        android:title="High Quality"/>
+</menu>

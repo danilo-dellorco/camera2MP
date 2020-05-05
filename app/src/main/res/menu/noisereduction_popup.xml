@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/fastNoise"
+        android:title="Fast"/>
+    <item android:id="@+id/highNoise"
+        android:title="High quality"/>
+    <item android:id="@+id/minNoise"
+        android:title="Minimal"/>
+    <item android:id="@+id/zeroNoise"
+        android:title="Zero shutter lag"/>
+    <item android:id="@+id/offNoise"
+        android:title="Off"/>
+</menu>

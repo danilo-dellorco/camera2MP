@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "AndroidCameraApi";
     private static final String TAG2 = "Permessi";
     private ImageButton takePictureButton,btnFlip,btnGallery;
-    private Button btnFlash;
+    private Button btnFlash, btnColorCorrection, btnEffects, btnNoise;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
@@ -115,6 +115,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnGallery.setOnClickListener(this);
         takePictureButton.setOnClickListener(this);
         btnFlash.setOnClickListener(this);
+        btnNoise = findViewById(R.id.btnNoiseReduction);
+        btnNoise.setOnClickListener(this);
+        btnColorCorrection = findViewById(R.id.btnColorCorrection);
+        btnColorCorrection.setOnClickListener(this);
+        btnEffects = findViewById(R.id.btnEffects);
+        btnEffects.setOnClickListener(this);
         btnFlip = findViewById(R.id.btn_Flip);
         btnFlip.setOnClickListener(this);
         cameraId = CAMERA_BACK;         // apre camera frontale all'avvio
@@ -231,7 +237,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (null == cameraDevice) {
             Log.e(TAG, "updatePreview error, return");
         }
-        //(previewRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE, CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE); //Builder della richiesta di preview
+//        previewRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+//        previewRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE, CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE); //Builder della richiesta di preview
         previewRequestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_SINGLE); //Attiva il flash
         //previewRequestBuilder.set(CaptureRequest.NOISE_REDUCTION_MODE, CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY);
 
@@ -305,10 +312,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if (v.getId() == R.id.btnFlash){
             btnFlash.startAnimation(anim_button);
-            showPopup(v,R.menu.menu_effects);
+            showPopup(v,R.menu.flashmenu_popup);
         }
-
-
+        if (v.getId() == R.id.btnColorCorrection){
+            btnColorCorrection.startAnimation(anim_button);
+            showPopup(v, R.menu.colorcorrection_popup);
+        }
+        if (v.getId() == R.id.btnEffects){
+            btnEffects.startAnimation(anim_button);
+            showPopup(v, R.menu.menu_effects);
+        }
+        if (v.getId() == R.id.btnNoiseReduction){
+            btnNoise.startAnimation(anim_button);
+            showPopup(v, R.menu.noisereduction_popup);
+        }
     }
 
     public static boolean hasPermissions(Context context, String[] permissions) {
