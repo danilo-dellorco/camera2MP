@@ -1,13 +1,13 @@
-package it.runningexamples.recamera2;
+/** Questa classe contiene tutti i metodi usati nella MainActivity che non fanno direttamente utilizzo di parametri contenuti nell'activity.
+ *  Viene utilizzata per snellire il codice */
 
+
+package it.runningexamples.recamera2;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraCharacteristics;
 import android.os.Environment;
-import android.util.Log;
-
 import androidx.core.app.ActivityCompat;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -76,4 +76,6 @@ public class CameraTools {
             }
         }
     }
+
+
 }

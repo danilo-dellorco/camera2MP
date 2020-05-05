@@ -22,7 +22,6 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.MenuInflater;
@@ -35,21 +34,19 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-//TODO sistemare immagine capovolta fotocamera frontale
 //TODO Naming convention
+//TODO Internazionalizzazione
+//TODO Implementare effetti e filtri tramite onItemClicked
+//TODO Prendere risoluzione fotocamera e togliere 640x480
 
 public class MainActivity extends AppCompatActivity{
     private static final int PERMISSION_ALL = 1;
@@ -59,12 +56,6 @@ public class MainActivity extends AppCompatActivity{
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.CAMERA
     };
-
-    private static final String TAG = "AndroidCameraApi";
-    private static final String TAG2 = "Permessi";
-    private ImageButton takePictureButton, btnFlip, btnGallery;
-    private Button btnFlash, btnColorCorrection, btnEffects, btnNoise;
-    private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
     static {
@@ -91,9 +82,8 @@ public class MainActivity extends AppCompatActivity{
 
     private Size imageDimension;
     private File folder,file;
+    private TextureView textureView;
     TextureListener textureListener;
-
-    int lastPic;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,30 +102,35 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public class Holder implements View.OnClickListener{
+        Animation anim_button,anim_photo;
+        private ImageButton takePictureButton, btnFlip, btnGallery;
+        private Button btnFlash, btnColorCorrection, btnEffects, btnNoise;
 
         Holder(){
+            anim_photo = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.photo_button_click);
+            anim_button = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bar_button_click);
+
             textureView = findViewById(R.id.texture);
-            textureView.setSurfaceTextureListener(textureListener);
             takePictureButton = findViewById(R.id.btn_takepicture);
             btnGallery = findViewById(R.id.btn_gallery);
             btnFlash = findViewById(R.id.btnFlash);
+            btnNoise = findViewById(R.id.btnNoiseReduction);
+            btnFlip = findViewById(R.id.btn_Flip);
+            btnEffects = findViewById(R.id.btnEffects);
+            btnColorCorrection = findViewById(R.id.btnColorCorrection);
+
+            textureView.setSurfaceTextureListener(textureListener);
+            btnColorCorrection.setOnClickListener(this);
+            btnEffects.setOnClickListener(this);
+            btnNoise.setOnClickListener(this);
+            btnFlip.setOnClickListener(this);
             btnGallery.setOnClickListener(this);
             takePictureButton.setOnClickListener(this);
             btnFlash.setOnClickListener(this);
-            btnNoise = findViewById(R.id.btnNoiseReduction);
-            btnNoise.setOnClickListener(this);
-            btnColorCorrection = findViewById(R.id.btnColorCorrection);
-            btnColorCorrection.setOnClickListener(this);
-            btnEffects = findViewById(R.id.btnEffects);
-            btnEffects.setOnClickListener(this);
-            btnFlip = findViewById(R.id.btn_Flip);
-            btnFlip.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
-            Animation anim_button = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bar_button_click);
-            Animation anim_photo = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.photo_button_click);
 
             if (v.getId() == R.id.btn_takepicture) {
                 takePictureButton.startAnimation(anim_photo);
@@ -173,6 +168,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+
     //Inizializzo i callback e l'imageListener
     private final CameraStateCallback cameraStateCallback = new CameraStateCallback();
     SessionStateCallback sessionStateCallback = new SessionStateCallback();
@@ -195,7 +191,6 @@ public class MainActivity extends AppCompatActivity{
 
     protected void takePicture() { //Metodo che scatta e salva una foto            // throws CameraAccessException imposta da getOrientantion()
         if (null == cameraDevice) {
-            Log.e(TAG, "cameraDevice is null");
             return;
         }
         int rotation = getWindowManager().getDefaultDisplay().getRotation();
@@ -221,7 +216,6 @@ public class MainActivity extends AppCompatActivity{
             Surface previewSurface = new Surface(texture);
             Surface readerSurface = imageReader.getSurface();
             cameraDevice.createCaptureSession(Arrays.asList(previewSurface, readerSurface), sessionStateCallback, null);
-            Log.v("CFG", "Created Capture Session");
 
             previewRequestBuilder.addTarget(previewSurface);
         } catch (CameraAccessException e) {
@@ -230,24 +224,22 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+
     /*  Il controllo per il permesso CAMERA non viene fatto esplicitamente
         su manager.openCamera e questo causa un Warning. Poiché la nostra app
         viene chiusa immediatamente se non si danno i permessi, non è necessario controllarli
         nuovamente, per cui ignoro il warning.
      */
-
-
     @SuppressLint("MissingPermission")
     private void openCamera() {
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-        Log.e(TAG, "is camera open");
         try {
             characteristics = manager.getCameraCharacteristics(cameraId); //Ottengo le caratteristiche della fotocamera attuale tramite il suo cameraId
-            //Ottiene una StreamConfigurationMap dalle carachteristics della camera. contiene tutte le configurazioni di streaming disponibili supportate dal cameraDevice;
+
+            //Ottiene una StreamConfigurationMap dalle carachteristics della camera. Contiene tutte le configurazioni di streaming disponibili supportate dal cameraDevice;
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             assert map != null;
             imageDimension = map.getOutputSizes(ImageFormat.JPEG)[1];
-            Log.d(TAG, "imageDimension " + imageDimension);
             imageReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1); //Instanzia l'imageReader per leggere e mostrare le foto scattate
             manager.openCamera(cameraId, cameraStateCallback, null); //lancia il metodo openCamera che apre la connessione con il cameraDevice avente id cameraId
         } catch (CameraAccessException e) {
@@ -259,7 +251,6 @@ public class MainActivity extends AppCompatActivity{
     protected void updatePreview() {
         //Aggiorna costantemente la Preview, fornendo l'anteprima istante per istante della ripresa
         if (null == cameraDevice) {
-            Log.e(TAG, "updatePreview error, return");
         }
         try {
             captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null); //Richiede l'acquisizione ripetuta infinita di immagini da questa sessione. Permette di aggiornare continuamente l'immagine vista sulla surface.
@@ -295,7 +286,6 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        Log.e(TAG, "onResume");
         if (textureView.isAvailable() && CameraTools.hasPermissions(MainActivity.this, PERMISSIONS)) {
             openCamera();
         } else {
@@ -305,29 +295,19 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     protected void onPause() {
-        Log.e(TAG, "onPause");
         closeCamera();
         super.onPause();
     }
 
     class TextureListener implements TextureView.SurfaceTextureListener {
         @Override
-        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-            openCamera();
-        }
-
+        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {openCamera();}
         @Override
-        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        }
-
+        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {}
         @Override
-        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-            return false;
-        }
-
+        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {return false;}
         @Override
-        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-        }
+        public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
 
     }
 
@@ -369,8 +349,6 @@ public class MainActivity extends AppCompatActivity{
 
         @Override
         public void onConfigured(CameraCaptureSession session) {
-            Log.v("CFG", "ONCONFIGURED");
-            //Se la camera è già chiusa retrurn
             if (null == cameraDevice) {
                 return;
             }
@@ -387,9 +365,7 @@ public class MainActivity extends AppCompatActivity{
 
     class CameraStateCallback extends CameraDevice.StateCallback {
         @Override
-        public void onOpened(CameraDevice camera) {
-            //This is called when the camera is open
-            Log.e(TAG, "onOpened");
+        public void onOpened(CameraDevice camera) { //Chiamato quando viene aperta la Camera
             cameraDevice = camera;
             try {
                 previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW); //Creo il builder della CaptureRequest da passare alla sessione per mostrare la preview della camera
@@ -401,15 +377,12 @@ public class MainActivity extends AppCompatActivity{
         }
 
         @Override
-        public void onDisconnected(@NonNull CameraDevice camera) {
-        }
-
+        public void onDisconnected(@NonNull CameraDevice camera) {}
         @Override
-        public void onError(@NonNull CameraDevice camera, int error) {
-        }
+        public void onError(@NonNull CameraDevice camera, int error) {}
     }
 
-    public class SingleMediaScanner implements MediaScannerConnection.MediaScannerConnectionClient { //Mostra una foto scattata
+    public class SingleMediaScanner implements MediaScannerConnection.MediaScannerConnectionClient { //Mostra una foto scattata tramite la galleria
         private MediaScannerConnection mMs;
         private File mFile;
 
@@ -432,7 +405,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    public void showPopup(View v, int menu) {
+    public void showPopup(View v, int menu) { //Mostra il menu popup preso in input
         PopupMenu popup = new PopupMenu(this, v);
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(menu, popup.getMenu());
