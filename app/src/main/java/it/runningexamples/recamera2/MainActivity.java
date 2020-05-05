@@ -35,9 +35,11 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -60,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = "AndroidCameraApi";
     private static final String TAG2 = "Permessi";
-    private ImageButton takePictureButton,btnFlip,btnGallery;
+    private ImageButton takePictureButton, btnFlip, btnGallery;
     private Button btnFlash, btnColorCorrection, btnEffects, btnNoise;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -134,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ImageListener imageListener = new ImageListener();
 
 
-   public void switchCamera() {
+    public void switchCamera() {
         if (cameraId.equals(CAMERA_FRONT)) {
             cameraId = CAMERA_BACK;
             closeCamera();
@@ -150,7 +152,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // JPEG_ORIENTATION -> Se LENS_FACING_FRONT l'immagine jpeg deve essere ruotata rispetto all'orientamento della fotocamera.
     // Dipende dalle caratteristiche del dispositivo. https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics#SENSOR_ORIENTATION
     private int getJpegOrientation(CameraCharacteristics c, int deviceOrientation) {
-        if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN) return 0;
+        if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN)
+            return 0;
         int sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION);
 
         // Round device orientation to a multiple of 90
@@ -176,10 +179,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         try {
             characteristics = manager.getCameraCharacteristics(cameraDevice.getId()); //Prendo le caratteristiche della camera tramite il suo ID (??)
-
             pictureRequestBuilder.addTarget(imageReader.getSurface());
-
-
             pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(characteristics, rotation));
             createFilePhoto(); //Chiama il metodo per creare il file dove salvare la foto
             imageReader.setOnImageAvailableListener(imageListener, null);
@@ -196,8 +196,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
             Surface previewSurface = new Surface(texture);
             Surface readerSurface = imageReader.getSurface();
-            cameraDevice.createCaptureSession(Arrays.asList(previewSurface,readerSurface), sessionStateCallback, null);
-            Log.v ("CFG","Created Capture Session");
+            cameraDevice.createCaptureSession(Arrays.asList(previewSurface, readerSurface), sessionStateCallback, null);
+            Log.v("CFG", "Created Capture Session");
 
             previewRequestBuilder.addTarget(previewSurface);
         } catch (CameraAccessException e) {
@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             assert map != null;
             imageDimension = map.getOutputSizes(ImageFormat.JPEG)[1];
-            Log.d(TAG, "imageDimension "+ imageDimension);
+            Log.d(TAG, "imageDimension " + imageDimension);
             imageReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1); //Instanzia l'imageReader per leggere e mostrare le foto scattate
             manager.openCamera(cameraId, cameraStateCallback, null); //lancia il metodo openCamera che apre la connessione con il cameraDevice avente id cameraId
         } catch (CameraAccessException e) {
@@ -288,8 +288,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        Animation anim_button = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.bar_button_click);
-        Animation anim_photo = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.photo_button_click);
+        Animation anim_button = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bar_button_click);
+        Animation anim_photo = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.photo_button_click);
 
         if (v.getId() == R.id.btn_takepicture) {
             takePictureButton.startAnimation(anim_photo);
@@ -299,25 +299,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             switchCamera();
             btnFlip.startAnimation(anim_button);
         }
-        if (v.getId() == R.id.btn_gallery){
+        if (v.getId() == R.id.btn_gallery) {
             btnGallery.startAnimation(anim_button);
             File[] allFiles = folder.listFiles();
-            lastPic = allFiles.length-1;
-            new SingleMediaScanner(this,allFiles[lastPic]);
+            lastPic = allFiles.length - 1;
+            new SingleMediaScanner(this, allFiles[lastPic]);
         }
-        if (v.getId() == R.id.btnFlash){
+        if (v.getId() == R.id.btnFlash) {
             btnFlash.startAnimation(anim_button);
-            showPopup(v,R.menu.flashmenu_popup);
+            showPopup(v, R.menu.flashmenu_popup);
         }
-        if (v.getId() == R.id.btnColorCorrection){
+        if (v.getId() == R.id.btnColorCorrection) {
             btnColorCorrection.startAnimation(anim_button);
             showPopup(v, R.menu.colorcorrection_popup);
         }
-        if (v.getId() == R.id.btnEffects){
+        if (v.getId() == R.id.btnEffects) {
             btnEffects.startAnimation(anim_button);
             showPopup(v, R.menu.menu_effects);
         }
-        if (v.getId() == R.id.btnNoiseReduction){
+        if (v.getId() == R.id.btnNoiseReduction) {
             btnNoise.startAnimation(anim_button);
             showPopup(v, R.menu.noisereduction_popup);
         }
@@ -327,11 +327,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         boolean garanted = true;
         if (context != null && permissions != null) {
             for (String permission : permissions) {
-                Log.d(TAG2, "Check "+permission);
+                Log.d(TAG2, "Check " + permission);
                 if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG2, permission + " Not garanted");
                     garanted = false;
-                    Log.d(TAG2, "Garanted = "+garanted);
+                    Log.d(TAG2, "Garanted = " + garanted);
                 }
             }
         }
@@ -346,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             folder.mkdirs(); //crea la directory delle foto se questa non esiste
         }
         lastPic = folder.listFiles().length;
-        String path = Environment.getExternalStorageDirectory() + "/camera2photos/pic" + Integer.toString(lastPic);
+        String path = Environment.getExternalStorageDirectory() + "/camera2photos/pic" + lastPic;
         file = new File(path + ".jpg");
         int num = 1;
         while (file.exists()) {
@@ -428,7 +428,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onConfigured(CameraCaptureSession session) {
-            Log.v ("CFG","ONCONFIGURED");
+            Log.v("CFG", "ONCONFIGURED");
             //Se la camera è già chiusa retrurn
             if (null == cameraDevice) {
                 return;
@@ -458,10 +458,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             createCameraPreview();
         }
+
         @Override
-        public void onDisconnected(@NonNull CameraDevice camera) {}
+        public void onDisconnected(@NonNull CameraDevice camera) {
+        }
+
         @Override
-        public void onError(@NonNull CameraDevice camera, int error) {}
+        public void onError(@NonNull CameraDevice camera, int error) {
+        }
     }
 
     public class SingleMediaScanner implements MediaScannerConnection.MediaScannerConnectionClient { //Mostra una foto scattata
@@ -488,10 +492,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void showPopup(View v,int menu) {
+    public void showPopup(View v, int menu) {
         PopupMenu popup = new PopupMenu(this, v);
         MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(menu,popup.getMenu());
+        inflater.inflate(menu, popup.getMenu());
         popup.show();
     }
 
