@@ -9,4 +9,9 @@
         android:toYScale="1.0"
         android:pivotX="50%"
         android:pivotY="50%" />
+
+    <alpha
+        android:fromAlpha="0.2"
+        android:toAlpha="1.0"
+        android:duration="500"/>
 </set>

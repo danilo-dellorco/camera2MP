@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Camera;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -61,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "AndroidCameraApi";
     private static final String TAG2 = "Permessi";
     private ImageButton takePictureButton,btnFlip,btnGallery;
-    private Button btnFlash, btnColorCorrection, btnEffects, btnNoise;
+    private Button btnFlash;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected CaptureRequest.Builder pictureRequestBuilder;
     protected CameraManager manager; //Gestisce tutti i cameraDevice e permette di ottenere i cameraCharacteristics di ognuno
     protected ImageReader imageReader; //Visualizza le foto una volta scattate
+    public CameraProperties properties;
 
     //Variabili immagine di output
     private static final int width = 640;
@@ -107,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         folder = new File(Environment.getExternalStorageDirectory() +
                 File.separator + "camera2photos");
 
+        properties = new CameraProperties();
         textureView = findViewById(R.id.texture);
         textureView.setSurfaceTextureListener(textureListener);
         takePictureButton = findViewById(R.id.btn_takepicture);
@@ -115,12 +118,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnGallery.setOnClickListener(this);
         takePictureButton.setOnClickListener(this);
         btnFlash.setOnClickListener(this);
-        btnNoise = findViewById(R.id.btnNoiseReduction);
-        btnNoise.setOnClickListener(this);
-        btnColorCorrection = findViewById(R.id.btnColorCorrection);
-        btnColorCorrection.setOnClickListener(this);
-        btnEffects = findViewById(R.id.btnEffects);
-        btnEffects.setOnClickListener(this);
         btnFlip = findViewById(R.id.btn_Flip);
         btnFlip.setOnClickListener(this);
         cameraId = CAMERA_BACK;         // apre camera frontale all'avvio
@@ -175,11 +172,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         try {
             characteristics = manager.getCameraCharacteristics(cameraDevice.getId()); //Prendo le caratteristiche della camera tramite il suo ID (??)
-            pictureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            pictureRequestBuilder.addTarget(imageReader.getSurface());
-            //pictureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO); //Non voglio controllare i metadati.
 
-            //pictureRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION,)
+            pictureRequestBuilder.addTarget(imageReader.getSurface());
+
+
             pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(characteristics, rotation));
             createFilePhoto(); //Chiama il metodo per creare il file dove salvare la foto
             imageReader.setOnImageAvailableListener(imageListener, null);
@@ -198,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Surface readerSurface = imageReader.getSurface();
             cameraDevice.createCaptureSession(Arrays.asList(previewSurface,readerSurface), sessionStateCallback, null);
             Log.v ("CFG","Created Capture Session");
-            previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW); //Creo il builder della CaptureRequest da passare alla sessione per mostrare la preview della camera
+
             previewRequestBuilder.addTarget(previewSurface);
         } catch (CameraAccessException e) {
             finish();
@@ -237,11 +233,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (null == cameraDevice) {
             Log.e(TAG, "updatePreview error, return");
         }
-//        previewRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-//        previewRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE, CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE); //Builder della richiesta di preview
-        previewRequestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_SINGLE); //Attiva il flash
-        //previewRequestBuilder.set(CaptureRequest.NOISE_REDUCTION_MODE, CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY);
-
         try {
             captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null); //Richiede l'acquisizione ripetuta infinita di immagini da questa sessione. Permette di aggiornare continuamente l'immagine vista sulla surface.
         } catch (CameraAccessException e) {
@@ -312,20 +303,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         if (v.getId() == R.id.btnFlash){
             btnFlash.startAnimation(anim_button);
-            showPopup(v,R.menu.flashmenu_popup);
+            showPopup(v,R.menu.menu_effects);
+            properties.EFFECT = CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE;
+            properties.setProperties();
+            updatePreview();
+
         }
-        if (v.getId() == R.id.btnColorCorrection){
-            btnColorCorrection.startAnimation(anim_button);
-            showPopup(v, R.menu.colorcorrection_popup);
-        }
-        if (v.getId() == R.id.btnEffects){
-            btnEffects.startAnimation(anim_button);
-            showPopup(v, R.menu.menu_effects);
-        }
-        if (v.getId() == R.id.btnNoiseReduction){
-            btnNoise.startAnimation(anim_button);
-            showPopup(v, R.menu.noisereduction_popup);
-        }
+
+
     }
 
     public static boolean hasPermissions(Context context, String[] permissions) {
@@ -455,6 +440,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //This is called when the camera is open
             Log.e(TAG, "onOpened");
             cameraDevice = camera;
+            try {
+                previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW); //Creo il builder della CaptureRequest da passare alla sessione per mostrare la preview della camera
+                pictureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
             createCameraPreview();
         }
         @Override
@@ -493,6 +484,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         inflater.inflate(menu,popup.getMenu());
         popup.show();
     }
+
+    /*public class CameraProperties {
+        int EFFECT,NOISE,COLOR,FLASH;
+        //CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE
+        //CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY
+        //CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_FAST
+        //CameraMetadata.COLOR_CORRECTION
+
+        public void setProperties(){
+            previewRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE,EFFECT);
+            previewRequestBuilder.set(CaptureRequest.NOISE_REDUCTION_MODE,NOISE);
+            previewRequestBuilder.set(CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE,COLOR);
+            previewRequestBuilder.set(CaptureRequest.FLASH_MODE,FLASH);
+            pictureRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE,EFFECT);
+            pictureRequestBuilder.set(CaptureRequest.NOISE_REDUCTION_MODE,NOISE);
+            pictureRequestBuilder.set(CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE,COLOR);
+            pictureRequestBuilder.set(CaptureRequest.FLASH_MODE,FLASH);
+        }
+    }*/
 
 }
 
