@@ -51,7 +51,7 @@ import java.util.Arrays;
 //TODO sistemare immagine capovolta fotocamera frontale
 //TODO Naming convention
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity{
     private static final int PERMISSION_ALL = 1;
     private static final String CAMERA_FRONT = "1";
     private static final String CAMERA_BACK = "0";
@@ -91,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private Size imageDimension;
     private File folder,file;
-    private boolean flashMode; //??
     TextureListener textureListener;
 
     int lastPic;
@@ -106,24 +105,72 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        folder = new File(Environment.getExternalStorageDirectory() + File.separator + "camera2photos");
-        textureView = findViewById(R.id.texture);
-        textureView.setSurfaceTextureListener(textureListener);
-        takePictureButton = findViewById(R.id.btn_takepicture);
-        btnGallery = findViewById(R.id.btn_gallery);
-        btnFlash = findViewById(R.id.btnFlash);
-        btnGallery.setOnClickListener(this);
-        takePictureButton.setOnClickListener(this);
-        btnFlash.setOnClickListener(this);
-        btnNoise = findViewById(R.id.btnNoiseReduction);
-        btnNoise.setOnClickListener(this);
-        btnColorCorrection = findViewById(R.id.btnColorCorrection);
-        btnColorCorrection.setOnClickListener(this);
-        btnEffects = findViewById(R.id.btnEffects);
-        btnEffects.setOnClickListener(this);
-        btnFlip = findViewById(R.id.btn_Flip);
-        btnFlip.setOnClickListener(this);
+        folder = new File(Environment.getExternalStorageDirectory() +
+                File.separator + "camera2photos");
+        Holder holder = new Holder();
         cameraId = CAMERA_BACK;         // apre camera frontale all'avvio
+    }
+
+    public class Holder implements View.OnClickListener{
+
+        Holder(){
+            textureView = findViewById(R.id.texture);
+            textureView.setSurfaceTextureListener(textureListener);
+            takePictureButton = findViewById(R.id.btn_takepicture);
+            btnGallery = findViewById(R.id.btn_gallery);
+            btnFlash = findViewById(R.id.btnFlash);
+            btnGallery.setOnClickListener(this);
+            takePictureButton.setOnClickListener(this);
+            btnFlash.setOnClickListener(this);
+            btnNoise = findViewById(R.id.btnNoiseReduction);
+            btnNoise.setOnClickListener(this);
+            btnColorCorrection = findViewById(R.id.btnColorCorrection);
+            btnColorCorrection.setOnClickListener(this);
+            btnEffects = findViewById(R.id.btnEffects);
+            btnEffects.setOnClickListener(this);
+            btnFlip = findViewById(R.id.btn_Flip);
+            btnFlip.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            Animation anim_button = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bar_button_click);
+            Animation anim_photo = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.photo_button_click);
+
+            if (v.getId() == R.id.btn_takepicture) {
+                takePictureButton.startAnimation(anim_photo);
+                takePicture();
+            }
+            if (v.getId() == R.id.btn_Flip) {
+                switchCamera();
+                btnFlip.startAnimation(anim_button);
+            }
+            if (v.getId() == R.id.btn_gallery) {
+                btnGallery.startAnimation(anim_button);
+                File[] allFiles = folder.listFiles();
+                if (allFiles == null){
+                    Toast.makeText(MainActivity.this, "Non hai scattato nessuna foto", Toast.LENGTH_SHORT).show();
+                }else {
+                    new SingleMediaScanner(MainActivity.this, allFiles[folder.listFiles().length - 1]);
+                }
+            }
+            if (v.getId() == R.id.btnFlash) {
+                btnFlash.startAnimation(anim_button);
+                showPopup(v, R.menu.flashmenu_popup);
+            }
+            if (v.getId() == R.id.btnColorCorrection) {
+                btnColorCorrection.startAnimation(anim_button);
+                showPopup(v, R.menu.colorcorrection_popup);
+            }
+            if (v.getId() == R.id.btnEffects) {
+                btnEffects.startAnimation(anim_button);
+                showPopup(v, R.menu.menu_effects);
+            }
+            if (v.getId() == R.id.btnNoiseReduction) {
+                btnNoise.startAnimation(anim_button);
+                showPopup(v, R.menu.noisereduction_popup);
+            }
+        }
     }
 
     //Inizializzo i callback e l'imageListener
@@ -261,43 +308,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.e(TAG, "onPause");
         closeCamera();
         super.onPause();
-    }
-
-    @Override
-    public void onClick(View v) {
-        Animation anim_button = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bar_button_click);
-        Animation anim_photo = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.photo_button_click);
-
-        if (v.getId() == R.id.btn_takepicture) {
-            takePictureButton.startAnimation(anim_photo);
-            takePicture();
-        }
-        if (v.getId() == R.id.btn_Flip) {
-            switchCamera();
-            btnFlip.startAnimation(anim_button);
-        }
-        if (v.getId() == R.id.btn_gallery) {
-            btnGallery.startAnimation(anim_button);
-            File[] allFiles = folder.listFiles();
-            lastPic = allFiles.length - 1;
-            new SingleMediaScanner(this, allFiles[lastPic]);
-        }
-        if (v.getId() == R.id.btnFlash) {
-            btnFlash.startAnimation(anim_button);
-            showPopup(v, R.menu.flashmenu_popup);
-        }
-        if (v.getId() == R.id.btnColorCorrection) {
-            btnColorCorrection.startAnimation(anim_button);
-            showPopup(v, R.menu.colorcorrection_popup);
-        }
-        if (v.getId() == R.id.btnEffects) {
-            btnEffects.startAnimation(anim_button);
-            showPopup(v, R.menu.menu_effects);
-        }
-        if (v.getId() == R.id.btnNoiseReduction) {
-            btnNoise.startAnimation(anim_button);
-            showPopup(v, R.menu.noisereduction_popup);
-        }
     }
 
     class TextureListener implements TextureView.SurfaceTextureListener {
