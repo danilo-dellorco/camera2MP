@@ -17,37 +17,60 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="0.5" >
+        </Space>
+
         <Button
+            android:background="@drawable/effects"
             android:id="@+id/btnEffects"
-            android:layout_width="wrap_content"
-            android:textSize="10dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Effects" />
+            android:layout_width="40dp"
+            android:layout_height="40dp"/>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" >
+        </Space>
 
         <Button
+            android:background="@drawable/color"
             android:id="@+id/btnColorCorrection"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="color corr."
-            android:textSize="10dp" />
+            android:layout_width="40dp"
+            android:layout_height="40dp" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" >
+        </Space>
 
         <Button
-            android:textSize="10dp"
+            android:background="@drawable/noise"
             android:id="@+id/btnNoiseReduction"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Noise Red." />
+            android:layout_width="40dp"
+            android:layout_height="40dp"/>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" >
+        </Space>
 
         <Button
             android:id="@+id/btnFlash"
-            android:textSize="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Flash"/>
+            android:background="@drawable/flash"
+            android:layout_width="40dp"
+            android:layout_height="40dp"/>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="0.5" >
+        </Space>
+
     </LinearLayout>
 
     <TextureView
@@ -63,7 +86,7 @@
     <LinearLayout
         android:id="@+id/linearLayoutBottom"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="140dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -88,7 +111,8 @@
             android:id="@+id/btn_gallery"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/gallery" />
+            android:background="@drawable/gallery"
+            android:scaleType="fitCenter"/>
     </LinearLayout>
 
 

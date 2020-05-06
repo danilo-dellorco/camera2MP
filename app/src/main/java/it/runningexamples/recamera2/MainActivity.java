@@ -55,9 +55,9 @@ import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity{
     private static final CaptureRequest.Key<Integer> EFFECT = CaptureRequest.CONTROL_EFFECT_MODE;
-    private static final CaptureRequest.Key<Integer> COLOR = CaptureRequest.CONTROL_EFFECT_MODE;
-    private static final CaptureRequest.Key<Integer> NOISE = CaptureRequest.CONTROL_EFFECT_MODE;
-    private static final CaptureRequest.Key<Integer> FLASH = CaptureRequest.CONTROL_EFFECT_MODE;
+    private static final CaptureRequest.Key<Integer> COLOR = CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE;
+    private static final CaptureRequest.Key<Integer> NOISE = CaptureRequest.NOISE_REDUCTION_MODE;
+    private static final CaptureRequest.Key<Integer> FLASH = CaptureRequest.FLASH_MODE;
 
     private static final int PERMISSION_ALL = 1;
     private static final String CAMERA_FRONT = "1";
@@ -219,9 +219,42 @@ public class MainActivity extends AppCompatActivity{
                     return true;
                 case R.id.effectOff:
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_OFF);
+                    return true;
+                case R.id.offColor:
+                    setCameraPreference(COLOR,CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_OFF);
+                    return true;
+                case R.id.fastColor:
+                    setCameraPreference(COLOR,CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_FAST);
+                    return true;
+                case R.id.highColor:
+                    setCameraPreference(COLOR,CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY);
+                    return true;
+                case R.id.offNoise:
+                    setCameraPreference(NOISE,CameraMetadata.NOISE_REDUCTION_MODE_OFF);
+                    return true;
+                case R.id.fastNoise:
+                    setCameraPreference(NOISE,CameraMetadata.NOISE_REDUCTION_MODE_FAST);
+                    return true;
+                case R.id.highNoise:
+                    setCameraPreference(NOISE,CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY);
+                    return true;
+                case R.id.minNoise:
+                    setCameraPreference(NOISE,CameraMetadata.NOISE_REDUCTION_MODE_MINIMAL);
+                    return true;
+                case R.id.zeroNoise:
+                    setCameraPreference(NOISE,CameraMetadata.NOISE_REDUCTION_MODE_ZERO_SHUTTER_LAG);
+                    return true;
+                case R.id.noFlash:
+                    pictureRequestBuilder.set(FLASH,CameraMetadata.FLASH_MODE_OFF);
+                    return true;
+                case R.id.yesFlash:
+                    pictureRequestBuilder.set(FLASH,CameraMetadata.FLASH_MODE_SINGLE);
+                    return true;
+                case R.id.torchFlash:
+                    previewRequestBuilder.set(FLASH,CameraMetadata.FLASH_MODE_TORCH);
+                    updatePreview();
+                    return true;
             }
-
-
             return false;
         }
     }

@@ -4,6 +4,6 @@
         android:title="No"/>
     <item android:id="@+id/yesFlash"
         android:title="Yes"/>
-    <item android:id="@+id/autoFlash"
-        android:title="Auto"/>
+    <item android:id="@+id/torchFlash"
+        android:title="Torch"/>
 </menu>
