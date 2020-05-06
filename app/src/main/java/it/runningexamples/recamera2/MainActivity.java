@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.Drawable;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity{
     private static final CaptureRequest.Key<Integer> COLOR = CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE;
     private static final CaptureRequest.Key<Integer> NOISE = CaptureRequest.NOISE_REDUCTION_MODE;
     private static final CaptureRequest.Key<Integer> FLASH = CaptureRequest.FLASH_MODE;
+    public Holder holder;
 
     private static final int PERMISSION_ALL = 1;
     private static final String CAMERA_FRONT = "1";
@@ -192,32 +194,40 @@ public class MainActivity extends AppCompatActivity{
         }
 
         @Override
-        //TODO se clicco negative mette filtro aqua
+        //TODO non funzionano i set sui bottoni
         public boolean onMenuItemClick(MenuItem item) {
             switch (item.getItemId()){
                 case R.id.negative:
+                    holder.btnEffects.setBackgroundResource(R.drawable.effects_active);
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE);
                     return true;
                 case R.id.aqua:
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_AQUA);
+                    btnEffects.setBackgroundResource(R.drawable.effects_active);
                     return true;
                 case R.id.solarize:
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SOLARIZE);
+                    btnEffects.setBackgroundResource(R.drawable.effects_active);
                     return true;
                 case R.id.blackboard:
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_BLACKBOARD);
+                    btnEffects.setBackgroundResource(R.drawable.effects_active);
                     return true;
                 case R.id.sepia:
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SEPIA);
+                    btnEffects.setBackgroundResource(R.drawable.effects_active);
                     return true;
                 case R.id.posterize:
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_POSTERIZE);
+                    btnEffects.setBackgroundResource(R.drawable.effects_active);
                     return true;
                 case R.id.whiteboard:
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_WHITEBOARD);
+                    btnEffects.setBackgroundResource(R.drawable.effects_active);
                     return true;
                 case R.id.effectOff:
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_OFF);
+                    btnEffects.setBackground(getResources().getDrawable(R.drawable.effects,null));
                     return true;
                 case R.id.offColor:
                     setCameraPreference(COLOR,CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_OFF);
