@@ -46,7 +46,6 @@ import java.util.Arrays;
 
 //TODO Naming convention
 //TODO Internazionalizzazione
-//TODO Implementare effetti e filtri tramite onItemClicked
 //TODO Prendere risoluzione fotocamera e togliere 640x480
 //TODO Stringhe e cazzi vari  dentro res
 //TODO quando switchi la camera si perdono tutte le impostazioni di filtri e effetti
