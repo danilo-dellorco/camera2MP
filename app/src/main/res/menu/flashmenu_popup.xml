@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/noFlash"
-        android:title="No"/>
+        android:title="@string/no"/>
     <item android:id="@+id/yesFlash"
-        android:title="Yes"/>
+        android:title="@string/yes"/>
     <item android:id="@+id/torchFlash"
-        android:title="Torch"/>
+        android:title="@string/torch"/>
 </menu>

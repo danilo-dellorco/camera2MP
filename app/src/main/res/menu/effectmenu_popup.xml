@@ -2,19 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/effectOff"
-        android:title="None"/>
+        android:title="@string/off"/>
     <item android:id="@+id/negative"
-        android:title="Negative"/>
+        android:title="@string/negative"/>
     <item android:id="@+id/sepia"
-        android:title="Sepia"/>
+        android:title="@string/sepia"/>
     <item android:id="@+id/solarize"
-        android:title="Solarize"/>
+        android:title="@string/solarize"/>
     <item android:id="@+id/posterize"
-        android:title="Posterize"/>
+        android:title="@string/posterize"/>
     <item android:id="@+id/whiteboard"
-        android:title="Whiteboard"/>
+        android:title="@string/whiteboard"/>
     <item android:id="@+id/blackboard"
-        android:title="Blackboard"/>
+        android:title="@string/blackboard"/>
     <item android:id="@+id/aqua"
-        android:title="Aqua"/>
+        android:title="@string/aqua"/>
 </menu>

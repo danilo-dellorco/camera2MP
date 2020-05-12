@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="givePermission">Debe proporcionar permisos para usar la aplicación!</string>
+    <string name="save">Guardado en:</string>
+    <string name="configuration">Se modificó la configuración.</string>
+    <string name="yes">Si</string>
+    <string name="torch">Antorcha</string>
+    <string name="fast">Rapido</string>
+    <string name="high_quality">De Alta Calidad</string>
+    <string name="minimal">Mínimo</string>
+    <string name="zero_shutter_lag">Retardo de Disparo Mínimo</string>
+    <string name="negative">Negativo</string>
+    <string name="sepia">Sepia</string>
+    <string name="solarize">Solarizar</string>
+    <string name="posterize">Posterizar</string>
+    <string name="whiteboard">Diseño</string>
+    <string name="blackboard">Pizarra</string>
+</resources>
