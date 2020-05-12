@@ -23,6 +23,7 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.MenuInflater;
@@ -50,6 +51,7 @@ import java.util.Arrays;
 //TODO Prendere risoluzione fotocamera e togliere 640x480
 //TODO Stringhe e cazzi vari  dentro res
 //TODO quando switchi la camera si perdono tutte le impostazioni di filtri e effetti
+//TODO flash torcia non si stacca se metti off o auto
 
 
 
