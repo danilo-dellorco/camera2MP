@@ -1,7 +1,22 @@
 <resources>
-    <string name="app_name">RE Camera2</string>
-    <string name="app_label">Running Examples Camera2</string>
-    <string name="givePermission">Devi fornire i permessi per utilizzare l\'app!</string>
-    <string name="save">Salvata in:</string>
-    <string name="configuration">Configurazione modificata</string>
+    <string name="app_name" translatable="false">RE Camera2</string>
+    <string name="app_label" translatable="false">Running Examples Camera2</string>
+    <string name="givePermission">You must provide permissions to use the app!</string>
+    <string name="save">Saved in:</string>
+    <string name="configuration">Configuration modified</string>
+    <string name="no" translatable="false">No</string>
+    <string name="yes">Yes</string>
+    <string name="torch">Torch</string>
+    <string name="off" translatable="false">OFF</string>
+    <string name="fast">Fast</string>
+    <string name="high_quality">High Quality</string>
+    <string name="minimal">Minimal</string>
+    <string name="zero_shutter_lag">Zero Shutter Lag</string>
+    <string name="negative">Negative</string>
+    <string name="sepia">Sepia</string>
+    <string name="solarize">Solarize</string>
+    <string name="posterize">Posterize</string>
+    <string name="whiteboard">Whiteboard</string>
+    <string name="blackboard">Blackboard</string>
+    <string name="aqua">Aqua</string>
 </resources>

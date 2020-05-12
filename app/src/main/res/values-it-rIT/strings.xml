@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="givePermission">Devi fornire i permessi per poter utilizzare l\'app!</string>
+    <string name="save">Salvata in:</string>
+    <string name="configuration">Configurazione modificata</string>
+    <string name="yes">Si</string>
+    <string name="torch">Modalità Torcia</string>
+    <string name="fast">Veloce</string>
+    <string name="high_quality">Alta Qualità</string>
+    <string name="minimal">Minimo</string>
+    <string name="zero_shutter_lag">Scatto Ritardo Minimo</string>
+    <string name="negative">Negativo</string>
+    <string name="sepia">Seppia</string>
+    <string name="solarize">Solarizzazione</string>
+    <string name="posterize">Posterizzazione</string>
+    <string name="whiteboard">Disegno</string>
+    <string name="blackboard">Lavagna</string>
+    <string name="aqua">Acqua</string>
+</resources>

@@ -19,7 +19,7 @@
             android:name=".MainActivity"
             android:configChanges="orientation"
             android:label="@string/app_label"
-            android:screenOrientation="locked"></activity>
+            android:screenOrientation="locked" />
         <activity
             android:name=".SplashActivity"
             android:configChanges="orientation"
