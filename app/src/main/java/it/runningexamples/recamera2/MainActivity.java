@@ -23,6 +23,7 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.MenuInflater;
@@ -45,20 +46,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-//TODO Naming convention
-//TODO Internazionalizzazione
-//TODO Prendere risoluzione fotocamera e togliere 640x480
-//TODO Stringhe e cazzi vari  dentro res
-//TODO quando switchi la camera si perdono tutte le impostazioni di filtri e effetti
-
-
+//TODO rivedere e pulire codice
 
 public class MainActivity extends AppCompatActivity{
     private static final CaptureRequest.Key<Integer> EFFECT = CaptureRequest.CONTROL_EFFECT_MODE;
     private static final CaptureRequest.Key<Integer> COLOR = CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE;
     private static final CaptureRequest.Key<Integer> NOISE = CaptureRequest.NOISE_REDUCTION_MODE;
     private static final CaptureRequest.Key<Integer> FLASH = CaptureRequest.FLASH_MODE;
-    public Holder holder;
 
     private static final int PERMISSION_ALL = 1;
     private static final String CAMERA_FRONT = "1";
@@ -88,13 +82,14 @@ public class MainActivity extends AppCompatActivity{
 
 
     //Variabili immagine di output
-    private static final int width = 640;
-    private static final int height = 480;
+    private static final int width = 1920;
+    private static final int height = 1080;
 
     private Size imageDimension;
     private File folder,file;
     private TextureView textureView;
     TextureListener textureListener;
+    public Holder holder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,8 +103,8 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
         folder = new File(Environment.getExternalStorageDirectory() +
                 File.separator + "camera2photos");
-        Holder holder = new Holder();
-        cameraId = CAMERA_BACK;         // apre camera frontale all'avvio
+        holder = new Holder();
+        cameraId = CAMERA_BACK;// apre camera frontale all'avvio
     }
 
     public class Holder implements View.OnClickListener,PopupMenu.OnMenuItemClickListener{
@@ -198,12 +193,12 @@ public class MainActivity extends AppCompatActivity{
         public boolean onMenuItemClick(MenuItem item) {
             switch (item.getItemId()){
                 case R.id.negative:
-                    holder.btnEffects.setBackgroundResource(R.drawable.effects_active);
+                    btnEffects.setBackgroundResource(R.drawable.effects_active);
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE);
                     return true;
                 case R.id.aqua:
-                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_AQUA);
                     btnEffects.setBackgroundResource(R.drawable.effects_active);
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_AQUA);
                     return true;
                 case R.id.solarize:
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SOLARIZE);
@@ -227,40 +222,51 @@ public class MainActivity extends AppCompatActivity{
                     return true;
                 case R.id.effectOff:
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_OFF);
-                    btnEffects.setBackground(getResources().getDrawable(R.drawable.effects,null));
+                    btnEffects.setBackgroundResource(R.drawable.effects);
                     return true;
                 case R.id.offColor:
                     setCameraPreference(COLOR,CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_OFF);
+                    btnColorCorrection.setBackgroundResource(R.drawable.color);
                     return true;
                 case R.id.fastColor:
                     setCameraPreference(COLOR,CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_FAST);
+                    btnColorCorrection.setBackgroundResource(R.drawable.color_active);
                     return true;
                 case R.id.highColor:
                     setCameraPreference(COLOR,CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY);
+                    btnColorCorrection.setBackgroundResource(R.drawable.color_active);
                     return true;
                 case R.id.offNoise:
                     setCameraPreference(NOISE,CameraMetadata.NOISE_REDUCTION_MODE_OFF);
+                    btnNoise.setBackgroundResource(R.drawable.noise);
                     return true;
                 case R.id.fastNoise:
                     setCameraPreference(NOISE,CameraMetadata.NOISE_REDUCTION_MODE_FAST);
+                    btnNoise.setBackgroundResource(R.drawable.noise_active);
                     return true;
                 case R.id.highNoise:
                     setCameraPreference(NOISE,CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY);
+                    btnNoise.setBackgroundResource(R.drawable.noise_active);
                     return true;
                 case R.id.minNoise:
                     setCameraPreference(NOISE,CameraMetadata.NOISE_REDUCTION_MODE_MINIMAL);
+                    btnNoise.setBackgroundResource(R.drawable.noise_active);
                     return true;
                 case R.id.zeroNoise:
                     setCameraPreference(NOISE,CameraMetadata.NOISE_REDUCTION_MODE_ZERO_SHUTTER_LAG);
+                    btnNoise.setBackgroundResource(R.drawable.noise_active);
                     return true;
                 case R.id.noFlash:
-                    pictureRequestBuilder.set(FLASH,CameraMetadata.FLASH_MODE_OFF);
+                    setCameraPreference(FLASH,CameraMetadata.FLASH_MODE_OFF);
+                    btnFlash.setBackgroundResource(R.drawable.flash);
                     return true;
                 case R.id.yesFlash:
                     pictureRequestBuilder.set(FLASH,CameraMetadata.FLASH_MODE_SINGLE);
+                    btnFlash.setBackgroundResource(R.drawable.flash_active);
                     return true;
                 case R.id.torchFlash:
                     previewRequestBuilder.set(FLASH,CameraMetadata.FLASH_MODE_TORCH);
+                    btnFlash.setBackgroundResource(R.drawable.flash_active);
                     updatePreview();
                     return true;
             }
@@ -278,6 +284,7 @@ public class MainActivity extends AppCompatActivity{
 
     public void switchCamera() {
         Animation animSwitch = AnimationUtils.loadAnimation(this,R.anim.switch_camera);
+        resetButtons();
         if (cameraId.equals(CAMERA_FRONT)) {
             cameraId = CAMERA_BACK;
             closeCamera();
@@ -352,8 +359,6 @@ public class MainActivity extends AppCompatActivity{
 
     protected void updatePreview() {
         //Aggiorna costantemente la Preview, fornendo l'anteprima istante per istante della ripresa
-        if (null == cameraDevice) {
-        }
         try {
             captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null); //Richiede l'acquisizione ripetuta infinita di immagini da questa sessione. Permette di aggiornare continuamente l'immagine vista sulla surface.
         } catch (CameraAccessException e) {
@@ -400,6 +405,7 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
+        resetButtons();
         if (textureView.isAvailable() && CameraTools.hasPermissions(MainActivity.this, PERMISSIONS)) {
             openCamera();
         } else {
@@ -411,6 +417,13 @@ public class MainActivity extends AppCompatActivity{
     protected void onPause() {
         closeCamera();
         super.onPause();
+    }
+
+    protected void resetButtons(){
+        holder.btnEffects.setBackgroundResource(R.drawable.effects);
+        holder.btnColorCorrection.setBackgroundResource(R.drawable.color);
+        holder.btnFlash.setBackgroundResource(R.drawable.flash);
+        holder.btnNoise.setBackgroundResource(R.drawable.noise);
     }
 
     class TextureListener implements TextureView.SurfaceTextureListener {
@@ -517,6 +530,7 @@ public class MainActivity extends AppCompatActivity{
             startActivity(intent);
             mMs.disconnect();
         }
+
     }
 
 }
