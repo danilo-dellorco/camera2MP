@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
-import android.graphics.drawable.Drawable;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -19,11 +18,11 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.media.MediaPlayer;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.MenuInflater;
@@ -47,10 +46,11 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 //TODO rivedere e pulire codice
+//TODO effetti preview android 10
 
 public class MainActivity extends AppCompatActivity{
     private static final CaptureRequest.Key<Integer> EFFECT = CaptureRequest.CONTROL_EFFECT_MODE;
-    private static final CaptureRequest.Key<Integer> COLOR = CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE;
+    private static final CaptureRequest.Key<Integer> AWB = CaptureRequest.CONTROL_AWB_MODE;
     private static final CaptureRequest.Key<Integer> NOISE = CaptureRequest.NOISE_REDUCTION_MODE;
     private static final CaptureRequest.Key<Integer> FLASH = CaptureRequest.FLASH_MODE;
 
@@ -108,15 +108,17 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public class Holder implements View.OnClickListener,PopupMenu.OnMenuItemClickListener{
+        MediaPlayer shutterSound;
         Animation anim_button,anim_photo;
         int menuClicked;
         private ImageButton takePictureButton, btnFlip, btnGallery;
-        private Button btnFlash, btnColorCorrection, btnEffects, btnNoise;
+        private Button btnFlash, btnAwb, btnEffects, btnNoise;
         private PopupMenu menuEffects,menuNoise,menuColor,menuFlash;
 
         Holder(){
             anim_photo = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.photo_button_click);
             anim_button = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.bar_button_click);
+            shutterSound = MediaPlayer.create(getApplicationContext(),R.raw.shutter);
 
             textureView = findViewById(R.id.texture);
             takePictureButton = findViewById(R.id.btn_takepicture);
@@ -125,14 +127,14 @@ public class MainActivity extends AppCompatActivity{
             btnNoise = findViewById(R.id.btnNoiseReduction);
             btnFlip = findViewById(R.id.btn_Flip);
             btnEffects = findViewById(R.id.btnEffects);
-            btnColorCorrection = findViewById(R.id.btnColorCorrection);
+            btnAwb = findViewById(R.id.btnAwb);
             textureView.setSurfaceTextureListener(textureListener);
             menuEffects = createPopup(btnEffects,R.menu.effectmenu_popup);
-            menuColor = createPopup(btnColorCorrection,R.menu.colorcorrection_popup);
+            menuColor = createPopup(btnAwb,R.menu.awb_popup);
             menuNoise = createPopup(btnNoise,R.menu.noisereduction_popup);
             menuFlash = createPopup(btnFlash,R.menu.flashmenu_popup);
 
-            btnColorCorrection.setOnClickListener(this);
+            btnAwb.setOnClickListener(this);
             btnEffects.setOnClickListener(this);
             btnNoise.setOnClickListener(this);
             btnFlip.setOnClickListener(this);
@@ -149,6 +151,7 @@ public class MainActivity extends AppCompatActivity{
         public void onClick(View v) {
 
             if (v.getId() == R.id.btn_takepicture) {
+                shutterSound.start();
                 takePictureButton.startAnimation(anim_photo);
                 takePicture();
             }
@@ -170,10 +173,10 @@ public class MainActivity extends AppCompatActivity{
                 menuFlash.show();
                 menuClicked = R.id.btnFlash;
             }
-            if (v.getId() == R.id.btnColorCorrection) {
-                btnColorCorrection.startAnimation(anim_button);
+            if (v.getId() == R.id.btnAwb) {
+                btnAwb.startAnimation(anim_button);
                 menuColor.show();
-                menuClicked = R.id.btnColorCorrection;
+                menuClicked = R.id.btnAwb;
 
             }
             if (v.getId() == R.id.btnEffects) {
@@ -204,10 +207,6 @@ public class MainActivity extends AppCompatActivity{
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SOLARIZE);
                     btnEffects.setBackgroundResource(R.drawable.effects_active);
                     return true;
-                case R.id.blackboard:
-                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_BLACKBOARD);
-                    btnEffects.setBackgroundResource(R.drawable.effects_active);
-                    return true;
                 case R.id.sepia:
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SEPIA);
                     btnEffects.setBackgroundResource(R.drawable.effects_active);
@@ -216,25 +215,41 @@ public class MainActivity extends AppCompatActivity{
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_POSTERIZE);
                     btnEffects.setBackgroundResource(R.drawable.effects_active);
                     return true;
-                case R.id.whiteboard:
-                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_WHITEBOARD);
-                    btnEffects.setBackgroundResource(R.drawable.effects_active);
-                    return true;
                 case R.id.effectOff:
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_OFF);
                     btnEffects.setBackgroundResource(R.drawable.effects);
                     return true;
-                case R.id.offColor:
-                    setCameraPreference(COLOR,CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_OFF);
-                    btnColorCorrection.setBackgroundResource(R.drawable.color);
+                case R.id.offAwb:
+                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_OFF);
+                    btnAwb.setBackgroundResource(R.drawable.awb);
                     return true;
-                case R.id.fastColor:
-                    setCameraPreference(COLOR,CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_FAST);
-                    btnColorCorrection.setBackgroundResource(R.drawable.color_active);
+                case R.id.autoAwb:
+                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_AUTO);
+                    btnAwb.setBackgroundResource(R.drawable.awb_active);
                     return true;
-                case R.id.highColor:
-                    setCameraPreference(COLOR,CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY);
-                    btnColorCorrection.setBackgroundResource(R.drawable.color_active);
+                case R.id.incandescentAwb:
+                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_INCANDESCENT);
+                    btnAwb.setBackgroundResource(R.drawable.awb_active);
+                    return true;
+                case R.id.fluorescentAwb:
+                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_FLUORESCENT);
+                    btnAwb.setBackgroundResource(R.drawable.awb_active);
+                    return true;
+                case R.id.daylightAwb:
+                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_DAYLIGHT);
+                    btnAwb.setBackgroundResource(R.drawable.awb_active);
+                    return true;
+                case R.id.cloudyAwb:
+                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_CLOUDY_DAYLIGHT);
+                    btnAwb.setBackgroundResource(R.drawable.awb_active);
+                    return true;
+                case R.id.twilightAwb:
+                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_TWILIGHT);
+                    btnAwb.setBackgroundResource(R.drawable.awb_active);
+                    return true;
+                case R.id.shadeAwb:
+                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_SHADE);
+                    btnAwb.setBackgroundResource(R.drawable.awb_active);
                     return true;
                 case R.id.offNoise:
                     setCameraPreference(NOISE,CameraMetadata.NOISE_REDUCTION_MODE_OFF);
@@ -265,9 +280,8 @@ public class MainActivity extends AppCompatActivity{
                     btnFlash.setBackgroundResource(R.drawable.flash_active);
                     return true;
                 case R.id.torchFlash:
-                    previewRequestBuilder.set(FLASH,CameraMetadata.FLASH_MODE_TORCH);
+                    setCameraPreference(FLASH,CameraMetadata.FLASH_MODE_TORCH);
                     btnFlash.setBackgroundResource(R.drawable.flash_active);
-                    updatePreview();
                     return true;
             }
             return false;
@@ -421,7 +435,7 @@ public class MainActivity extends AppCompatActivity{
 
     protected void resetButtons(){
         holder.btnEffects.setBackgroundResource(R.drawable.effects);
-        holder.btnColorCorrection.setBackgroundResource(R.drawable.color);
+        holder.btnAwb.setBackgroundResource(R.drawable.awb);
         holder.btnFlash.setBackgroundResource(R.drawable.flash);
         holder.btnNoise.setBackgroundResource(R.drawable.noise);
     }

@@ -16,7 +16,13 @@
     <string name="sepia">Sepia</string>
     <string name="solarize">Solarize</string>
     <string name="posterize">Posterize</string>
-    <string name="whiteboard">Whiteboard</string>
-    <string name="blackboard">Blackboard</string>
     <string name="aqua">Aqua</string>
+    <string name="auto">Auto</string>
+    <string name="incandescent">Incandescent</string>
+    <string name="fluorescent">Fluorescent</string>
+    <string name="daylight">Daylight</string>
+    <string name="cloudy">Cloudy</string>
+    <string name="twilight">Twilight</string>
+    <string name="shade">Shade</string>
+
 </resources>

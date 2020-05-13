@@ -13,7 +13,12 @@
     <string name="sepia">Sépia</string>
     <string name="solarize">Solariser</string>
     <string name="posterize">Postériser</string>
-    <string name="whiteboard">Tableau blanc</string>
-    <string name="blackboard">Noire</string>
     <string name="aqua">Aqua</string>
+    <string name="auto">Automatique</string>
+    <string name="incandescent">Incandescente</string>
+    <string name="fluorescent">Fluorescente</string>
+    <string name="daylight">Jour</string>
+    <string name="cloudy">Nuageuse</string>
+    <string name="twilight">Crépuscule</string>
+    <string name="shade">Ombre</string>
 </resources>

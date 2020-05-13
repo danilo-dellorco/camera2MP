@@ -11,10 +11,6 @@
         android:title="@string/solarize"/>
     <item android:id="@+id/posterize"
         android:title="@string/posterize"/>
-    <item android:id="@+id/whiteboard"
-        android:title="@string/whiteboard"/>
-    <item android:id="@+id/blackboard"
-        android:title="@string/blackboard"/>
     <item android:id="@+id/aqua"
         android:title="@string/aqua"/>
 </menu>

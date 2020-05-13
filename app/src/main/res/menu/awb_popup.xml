@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/offAwb"
+        android:title="@string/off"/>
+    <item android:id="@+id/autoAwb"
+        android:title="@string/auto"/>
+    <item android:id="@+id/incandescentAwb"
+        android:title="@string/incandescent"/>
+    <item android:id="@+id/fluorescentAwb"
+        android:title="@string/fluorescent"/>
+    <item android:id="@+id/daylightAwb"
+        android:title="@string/daylight"/>
+    <item android:id="@+id/cloudyAwb"
+        android:title="@string/cloudy"/>
+    <item android:id="@+id/twilightAwb"
+        android:title="@string/twilight"/>
+    <item android:id="@+id/shadeAwb"
+        android:title="@string/shade"/>
+</menu>

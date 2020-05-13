@@ -36,8 +36,8 @@
         </Space>
 
         <Button
-            android:background="@drawable/color"
-            android:id="@+id/btnColorCorrection"
+            android:background="@drawable/awb"
+            android:id="@+id/btnAwb"
             android:layout_width="40dp"
             android:layout_height="40dp" />
 
