@@ -219,10 +219,6 @@ public class MainActivity extends AppCompatActivity{
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_OFF);
                     btnEffects.setBackgroundResource(R.drawable.effects);
                     return true;
-                case R.id.offAwb:
-                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_OFF);
-                    btnAwb.setBackgroundResource(R.drawable.awb);
-                    return true;
                 case R.id.autoAwb:
                     setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_AUTO);
                     btnAwb.setBackgroundResource(R.drawable.awb_active);
