@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity{
     private static final CaptureRequest.Key<Integer> AWB = CaptureRequest.CONTROL_AWB_MODE;
     private static final CaptureRequest.Key<Integer> NOISE = CaptureRequest.NOISE_REDUCTION_MODE;
     private static final CaptureRequest.Key<Integer> FLASH = CaptureRequest.FLASH_MODE;
-
     private static final int PERMISSION_ALL = 1;
     private static final String CAMERA_FRONT = "1";
     private static final String CAMERA_BACK = "0";
@@ -69,6 +68,7 @@ public class MainActivity extends AppCompatActivity{
         ORIENTATIONS.append(Surface.ROTATION_180, 270);
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
+
 
     //Variabili hardware fotocamera
     private String cameraId; //ID numerico della fotocamera hardware
@@ -192,7 +192,6 @@ public class MainActivity extends AppCompatActivity{
         }
 
         @Override
-        //TODO non funzionano i set sui bottoni
         public boolean onMenuItemClick(MenuItem item) {
             switch (item.getItemId()){
                 case R.id.negative:
@@ -204,24 +203,24 @@ public class MainActivity extends AppCompatActivity{
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_AQUA);
                     return true;
                 case R.id.solarize:
-                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SOLARIZE);
                     btnEffects.setBackgroundResource(R.drawable.effects_active);
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SOLARIZE);
                     return true;
                 case R.id.sepia:
-                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SEPIA);
                     btnEffects.setBackgroundResource(R.drawable.effects_active);
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SEPIA);
                     return true;
                 case R.id.posterize:
-                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_POSTERIZE);
                     btnEffects.setBackgroundResource(R.drawable.effects_active);
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_POSTERIZE);
                     return true;
                 case R.id.effectOff:
-                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_OFF);
                     btnEffects.setBackgroundResource(R.drawable.effects);
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_OFF);
                     return true;
                 case R.id.autoAwb:
-                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_AUTO);
                     btnAwb.setBackgroundResource(R.drawable.awb_active);
+                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_AUTO);
                     return true;
                 case R.id.incandescentAwb:
                     setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_INCANDESCENT);
