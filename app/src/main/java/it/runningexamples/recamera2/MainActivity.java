@@ -444,11 +444,9 @@ public class MainActivity extends AppCompatActivity{
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {return false;}
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
-
     }
 
     class ImageListener implements ImageReader.OnImageAvailableListener {
-
         @Override
         public void onImageAvailable(ImageReader reader) {
             //Callback che viene chiamata quando è disponibile una nuova immagine nell'imageReader, ovvero quando viene scattata una foto
@@ -511,7 +509,6 @@ public class MainActivity extends AppCompatActivity{
             }
             createCameraPreview();
         }
-
         @Override
         public void onDisconnected(@NonNull CameraDevice camera) {}
         @Override
