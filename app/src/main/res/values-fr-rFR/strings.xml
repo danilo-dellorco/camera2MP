@@ -21,4 +21,5 @@
     <string name="cloudy">Nuageuse</string>
     <string name="twilight">Crépuscule</string>
     <string name="shade">Ombre</string>
+    <string name="noPic">Vous n\'avez pas pris de photos</string>
 </resources>

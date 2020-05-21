@@ -21,4 +21,5 @@
     <string name="cloudy">Nublado</string>
     <string name="twilight">Crepúsculo</string>
     <string name="shade">Sombra</string>
+    <string name="noPic">No has tomado ninguna foto.</string>
 </resources>
