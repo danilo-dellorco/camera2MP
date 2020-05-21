@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity{
     private static final CaptureRequest.Key<Integer> AWB = CaptureRequest.CONTROL_AWB_MODE;
     private static final CaptureRequest.Key<Integer> NOISE = CaptureRequest.NOISE_REDUCTION_MODE;
     private static final CaptureRequest.Key<Integer> FLASH = CaptureRequest.FLASH_MODE;
-
     private static final int PERMISSION_ALL = 1;
     private static final String CAMERA_FRONT = "1";
     private static final String CAMERA_BACK = "0";
@@ -69,6 +68,7 @@ public class MainActivity extends AppCompatActivity{
         ORIENTATIONS.append(Surface.ROTATION_180, 270);
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
+
 
     //Variabili hardware fotocamera
     private String cameraId; //ID numerico della fotocamera hardware
@@ -192,7 +192,6 @@ public class MainActivity extends AppCompatActivity{
         }
 
         @Override
-        //TODO non funzionano i set sui bottoni
         public boolean onMenuItemClick(MenuItem item) {
             switch (item.getItemId()){
                 case R.id.negative:
@@ -204,24 +203,24 @@ public class MainActivity extends AppCompatActivity{
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_AQUA);
                     return true;
                 case R.id.solarize:
-                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SOLARIZE);
                     btnEffects.setBackgroundResource(R.drawable.effects_active);
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SOLARIZE);
                     return true;
                 case R.id.sepia:
-                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SEPIA);
                     btnEffects.setBackgroundResource(R.drawable.effects_active);
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_SEPIA);
                     return true;
                 case R.id.posterize:
-                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_POSTERIZE);
                     btnEffects.setBackgroundResource(R.drawable.effects_active);
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_POSTERIZE);
                     return true;
                 case R.id.effectOff:
-                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_OFF);
                     btnEffects.setBackgroundResource(R.drawable.effects);
+                    setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_OFF);
                     return true;
                 case R.id.autoAwb:
-                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_AUTO);
                     btnAwb.setBackgroundResource(R.drawable.awb_active);
+                    setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_AUTO);
                     return true;
                 case R.id.incandescentAwb:
                     setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_INCANDESCENT);
@@ -319,7 +318,6 @@ public class MainActivity extends AppCompatActivity{
 
         try {
             characteristics = manager.getCameraCharacteristics(cameraDevice.getId()); //Prendo le caratteristiche della camera tramite il suo ID (??)
-            pictureRequestBuilder.addTarget(imageReader.getSurface());
             pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, CameraTools.getJpegOrientation(characteristics, rotation));
             file = CameraTools.createFilePhoto(folder); //Chiama il metodo per creare il file dove salvare la foto
             imageReader.setOnImageAvailableListener(imageListener, null);
@@ -338,6 +336,7 @@ public class MainActivity extends AppCompatActivity{
             Surface readerSurface = imageReader.getSurface();
             cameraDevice.createCaptureSession(Arrays.asList(previewSurface, readerSurface), sessionStateCallback, null);
             previewRequestBuilder.addTarget(previewSurface);
+            pictureRequestBuilder.addTarget(readerSurface);
         } catch (CameraAccessException e) {
             finish();
             e.printStackTrace();
@@ -359,7 +358,7 @@ public class MainActivity extends AppCompatActivity{
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             assert map != null;
             imageDimension = map.getOutputSizes(ImageFormat.JPEG)[1];
-            imageReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1); //Instanzia l'imageReader per leggere e mostrare le foto scattate
+            imageReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 2); //Instanzia l'imageReader per leggere e mostrare le foto scattate
             manager.openCamera(cameraId, cameraStateCallback, null); //lancia il metodo openCamera che apre la connessione con il cameraDevice avente id cameraId
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -368,7 +367,7 @@ public class MainActivity extends AppCompatActivity{
 
 
     protected void updatePreview() {
-        //Aggiorna costantemente la Preview, fornendo l'anteprima istante per istante della ripresa
+        //Metodo usato per aggiornare la preview a seguito di un cambiamento, inviando una nuova setRepeatingRequest al CameraDevice.
         try {
             captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null); //Richiede l'acquisizione ripetuta infinita di immagini da questa sessione. Permette di aggiornare continuamente l'immagine vista sulla surface.
         } catch (CameraAccessException e) {
@@ -445,11 +444,9 @@ public class MainActivity extends AppCompatActivity{
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {return false;}
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
-
     }
 
     class ImageListener implements ImageReader.OnImageAvailableListener {
-
         @Override
         public void onImageAvailable(ImageReader reader) {
             //Callback che viene chiamata quando è disponibile una nuova immagine nell'imageReader, ovvero quando viene scattata una foto
@@ -477,7 +474,6 @@ public class MainActivity extends AppCompatActivity{
         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
             Toast.makeText(MainActivity.this, getString(R.string.save) + file, Toast.LENGTH_SHORT).show();
-            createCameraPreview();
         }
     }
 
@@ -512,7 +508,6 @@ public class MainActivity extends AppCompatActivity{
             }
             createCameraPreview();
         }
-
         @Override
         public void onDisconnected(@NonNull CameraDevice camera) {}
         @Override
