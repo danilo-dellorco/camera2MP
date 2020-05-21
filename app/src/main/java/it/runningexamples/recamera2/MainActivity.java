@@ -452,17 +452,17 @@ public class MainActivity extends AppCompatActivity{
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
     }
 
+    //Callback che viene chiamata quando è disponibile una nuova immagine nell'imageReader, ovvero quando viene scattata una foto
     class ImageListener implements ImageReader.OnImageAvailableListener {
         @Override
         public void onImageAvailable(ImageReader reader) {
-            //Callback che viene chiamata quando è disponibile una nuova immagine nell'imageReader, ovvero quando viene scattata una foto
             Image image = null;
             try {
                 image = reader.acquireLatestImage();
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.capacity()];
                 buffer.get(bytes);
-                CameraTools.save(bytes,file); //chiama il metodo di basso livello che salva i bytes nel File creato
+                CameraTools.save(bytes,file);                               //Metodo di basso livello che salva i bytes nel File creato
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -475,6 +475,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    // Callback chiamato a fine elaborazione della CaptureRequest
     class CaptureCallback extends CameraCaptureSession.CaptureCallback {
         @Override
         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
@@ -483,15 +484,13 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    // Invocato quando il cameraDevice finisce la sua configurazione, permettendo alla sessione di iniziare ad elaborare le richieste
     class SessionStateCallback extends CameraCaptureSession.StateCallback {
-        //Callback usata per ottenere lo stato della CameraCaptureSession
-
         @Override
         public void onConfigured(CameraCaptureSession session) {
             if (null == cameraDevice) {
                 return;
             }
-            //Se il cameraDevice è pronto sessione è pronta, viene mostrata l'anteprima a schermo tramite il metodo updatePreview();
             captureSession = session;
             updatePreview();
         }
@@ -502,9 +501,10 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    // Invocato dopo la CORRETTA apertura del cameraDevice.
     class CameraStateCallback extends CameraDevice.StateCallback {
         @Override
-        public void onOpened(CameraDevice camera) { //Chiamato quando viene aperta la Camera
+        public void onOpened(CameraDevice camera) {
             cameraDevice = camera;
             try {
                 previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW); //Creo il builder della CaptureRequest da passare alla sessione per mostrare la preview della camera
