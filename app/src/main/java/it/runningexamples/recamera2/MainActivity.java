@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity{
                     setCameraPreference(EFFECT,CameraMetadata.CONTROL_EFFECT_MODE_OFF);
                     return true;
                 case R.id.autoAwb:
-                    btnAwb.setBackgroundResource(R.drawable.awb_active);
+                    btnAwb.setBackgroundResource(R.drawable.awb);
                     setCameraPreference(AWB,CameraMetadata.CONTROL_AWB_MODE_AUTO);
                     return true;
                 case R.id.incandescentAwb:
@@ -313,11 +313,8 @@ public class MainActivity extends AppCompatActivity{
         if (null == cameraDevice) {
             return;
         }
-        int rotation = getWindowManager().getDefaultDisplay().getRotation();
-        manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE); //Instanzio un camera manager, castando come Camera Manager il servizio CAMERA di android
-
         try {
-            characteristics = manager.getCameraCharacteristics(cameraDevice.getId()); //Prendo le caratteristiche della camera tramite il suo ID (??)
+            int rotation = getWindowManager().getDefaultDisplay().getRotation();
             pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, CameraTools.getJpegOrientation(characteristics, rotation));
             file = CameraTools.createFilePhoto(folder); //Chiama il metodo per creare il file dove salvare la foto
             imageReader.setOnImageAvailableListener(imageListener, null);
@@ -351,7 +348,7 @@ public class MainActivity extends AppCompatActivity{
      */
     @SuppressLint("MissingPermission")
     private void openCamera() {
-        CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+        manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
             characteristics = manager.getCameraCharacteristics(cameraId); //Ottengo le caratteristiche della fotocamera attuale tramite il suo cameraId
             //Ottiene una StreamConfigurationMap dalle carachteristics della camera. Contiene tutte le configurazioni di streaming disponibili supportate dal cameraDevice;
