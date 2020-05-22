@@ -45,9 +45,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-//TODO rivedere e pulire codice
-//TODO effetti preview android 10
-
 public class MainActivity extends AppCompatActivity{
 
     private static final CaptureRequest.Key<Integer> EFFECT = CaptureRequest.CONTROL_EFFECT_MODE;

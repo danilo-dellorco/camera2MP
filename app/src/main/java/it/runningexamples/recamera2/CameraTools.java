@@ -1,5 +1,5 @@
-/* Questa classe contiene tutti i metodi usati nella MainActivity che non fanno direttamente utilizzo di parametri contenuti nell'activity.
- *  Viene utilizzata per snellire il codice */
+/** Questa classe contiene tutti i metodi usati nella MainActivity che non fanno direttamente utilizzo di parametri contenuti nell'activity.
+ *  Utilizzato principalmente per snellire il codice della MainActivity */
 
 
 package it.runningexamples.recamera2;
