@@ -272,7 +272,9 @@ public class MainActivity extends AppCompatActivity{
                     return true;
                 case R.id.yesFlash:
                     pictureRequestBuilder.set(FLASH,CameraMetadata.FLASH_MODE_SINGLE);
+                    previewRequestBuilder.set(FLASH,CameraMetadata.FLASH_MODE_OFF);
                     btnFlash.setBackgroundResource(R.drawable.flash_active);
+                    updatePreview();
                     return true;
                 case R.id.torchFlash:
                     setCameraPreference(FLASH,CameraMetadata.FLASH_MODE_TORCH);
