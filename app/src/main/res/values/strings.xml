@@ -24,5 +24,6 @@
     <string name="cloudy">Cloudy</string>
     <string name="twilight">Twilight</string>
     <string name="shade">Shade</string>
+    <string name="noPic">You have not taken any photos!</string>
 
 </resources>

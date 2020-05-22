@@ -49,6 +49,7 @@ import java.util.Arrays;
 //TODO effetti preview android 10
 
 public class MainActivity extends AppCompatActivity{
+
     private static final CaptureRequest.Key<Integer> EFFECT = CaptureRequest.CONTROL_EFFECT_MODE;
     private static final CaptureRequest.Key<Integer> AWB = CaptureRequest.CONTROL_AWB_MODE;
     private static final CaptureRequest.Key<Integer> NOISE = CaptureRequest.NOISE_REDUCTION_MODE;
@@ -56,10 +57,12 @@ public class MainActivity extends AppCompatActivity{
     private static final int PERMISSION_ALL = 1;
     private static final String CAMERA_FRONT = "1";
     private static final String CAMERA_BACK = "0";
+
     String[] PERMISSIONS = {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.CAMERA
     };
+
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
     static {
@@ -69,17 +72,14 @@ public class MainActivity extends AppCompatActivity{
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
 
-
-    //Variabili hardware fotocamera
-    private String cameraId; //ID numerico della fotocamera hardware
-    protected CameraDevice cameraDevice; //Oggetto che rappresenta una fotocamera hardware, con tutte le sue informazioni
-    protected CameraCaptureSession captureSession; //Sessione usata per passare una CaptureRequest al CameraDevice
-    protected CameraCharacteristics characteristics; //Oggetto che contiene tutte le informazioni del cameraDevice, come ad esempio il cameraId
+    private String cameraId;                                //ID numerico della fotocamera hardware
+    protected CameraDevice cameraDevice;                    //Oggetto che rappresenta una fotocamera hardware, con tutte le sue informazioni
+    protected CameraCaptureSession captureSession;          //Sessione usata per passare una CaptureRequest al CameraDevice
+    protected CameraCharacteristics characteristics;        //Oggetto che contiene tutte le informazioni del cameraDevice, come ad esempio il cameraId
     protected CaptureRequest.Builder previewRequestBuilder; //Inizializza i campi di una CaptureRequest in uno dei template definiti nel CameraDevice. Questo è la request per chiedere di mostrare la preview della camera
     protected CaptureRequest.Builder pictureRequestBuilder;
-    protected CameraManager manager; //Gestisce tutti i cameraDevice e permette di ottenere i cameraCharacteristics di ognuno
-    protected ImageReader imageReader; //Visualizza le foto una volta scattate
-
+    protected CameraManager manager;                        //Gestisce tutti i cameraDevice e permette di ottenere i cameraCharacteristics di ognuno
+    protected ImageReader imageReader;                      //Permette di visualizzare e salvare la foto una volta scattata
 
     //Variabili immagine di output
     private static final int width = 1920;
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //Controlla i permessi all'avvio.
+        // Controllo sui permessi forniti dall'utente
         if (!CameraTools.hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         } else {
@@ -101,10 +101,10 @@ public class MainActivity extends AppCompatActivity{
         }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        folder = new File(Environment.getExternalStorageDirectory() +
-                File.separator + "camera2photos");
+
+        folder = new File(Environment.getExternalStorageDirectory() + File.separator + "camera2photos"); // Folder di destinazione per le foto scattate
         holder = new Holder();
-        cameraId = CAMERA_BACK;// apre camera frontale all'avvio
+        cameraId = CAMERA_BACK;                                                               // CameraId inizializzato come camera posteriore
     }
 
     public class Holder implements View.OnClickListener,PopupMenu.OnMenuItemClickListener{
@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity{
                 btnGallery.startAnimation(anim_button);
                 File[] allFiles = folder.listFiles();
                 if (allFiles == null){
-                    Toast.makeText(MainActivity.this, "Non hai scattato nessuna foto", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, R.string.noPic, Toast.LENGTH_SHORT).show();
                 }else {
                     new SingleMediaScanner(MainActivity.this, allFiles[folder.listFiles().length - 1]);
                 }
@@ -286,7 +286,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    //Inizializzo i callback e l'imageListener
+    //Inizializzazione dei callback e listener
     private final CameraStateCallback cameraStateCallback = new CameraStateCallback();
     SessionStateCallback sessionStateCallback = new SessionStateCallback();
     CaptureCallback captureCallback = new CaptureCallback();
@@ -307,18 +307,20 @@ public class MainActivity extends AppCompatActivity{
             closeCamera();
             openCamera();
             textureView.startAnimation(animSwitch);
-
         }
     }
 
-    protected void takePicture() { //Metodo che scatta e salva una foto            // throws CameraAccessException imposta da getOrientantion()
+    protected void takePicture() {
         if (null == cameraDevice) {
             return;
         }
         try {
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             pictureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, CameraTools.getJpegOrientation(characteristics, rotation));
-            file = CameraTools.createFilePhoto(folder); //Chiama il metodo per creare il file dove salvare la foto
+
+            // Creazione file di salvataggio
+            file = CameraTools.createFilePhoto(folder);
+
             imageReader.setOnImageAvailableListener(imageListener, null);
             captureSession.capture(pictureRequestBuilder.build(), captureCallback, null);
         } catch (CameraAccessException e) {
@@ -326,9 +328,9 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    protected void createCameraPreview() { //Crea la surface dove verrà mostrata l'anteprima tramite updatePreview, e crea la CaptureSession dove passare le richieste.
+    protected void createCameraPreview() { //Inizializzo gli oggetti necessari per mostrare l'anteprima dell'immagine tramite il metodo updatePreview()
         try {
-            SurfaceTexture texture = textureView.getSurfaceTexture(); //Prende la SurfaceTexture della textureView (dove viene visualizzata l'anteprima nel .xml)
+            SurfaceTexture texture = textureView.getSurfaceTexture();
             assert texture != null;
             texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
             Surface previewSurface = new Surface(texture);
@@ -352,21 +354,23 @@ public class MainActivity extends AppCompatActivity{
     private void openCamera() {
         manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
-            characteristics = manager.getCameraCharacteristics(cameraId); //Ottengo le caratteristiche della fotocamera attuale tramite il suo cameraId
-            //Ottiene una StreamConfigurationMap dalle carachteristics della camera. Contiene tutte le configurazioni di streaming disponibili supportate dal cameraDevice;
+            characteristics = manager.getCameraCharacteristics(cameraId);                                   //Utilizzo il cameraID della fotocamera corrente per prenderne le sue caratteristiche
+
+            //Ottienamo una StreamConfigurationMap dalle carachteristics della camera.
+            // Contiene tutte le configurazioni di streaming disponibili supportate dal cameraDevice;
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+
             assert map != null;
             imageDimension = map.getOutputSizes(ImageFormat.JPEG)[1];
-            imageReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 2); //Instanzia l'imageReader per leggere e mostrare le foto scattate
-            manager.openCamera(cameraId, cameraStateCallback, null); //lancia il metodo openCamera che apre la connessione con il cameraDevice avente id cameraId
+            imageReader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 2);        //Instanzia l'imageReader per leggere e mostrare le foto scattate
+            manager.openCamera(cameraId, cameraStateCallback, null);                            //lancia il metodo openCamera che apre la connessione con il cameraDevice avente id cameraId
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
     }
 
-
+    //Metodo usato per aggiornare la preview a seguito di un cambiamento, inviando una nuova setRepeatingRequest al CameraDevice.
     protected void updatePreview() {
-        //Metodo usato per aggiornare la preview a seguito di un cambiamento, inviando una nuova setRepeatingRequest al CameraDevice.
         try {
             captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null); //Richiede l'acquisizione ripetuta infinita di immagini da questa sessione. Permette di aggiornare continuamente l'immagine vista sulla surface.
         } catch (CameraAccessException e) {
@@ -374,7 +378,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    private void closeCamera() {
+    private void closeCamera() {                    // Chiudiamo la connessione con la camera
         if (null != cameraDevice) {
             cameraDevice.close();
             cameraDevice = null;
@@ -392,12 +396,13 @@ public class MainActivity extends AppCompatActivity{
         return popup;
     }
 
-    private void setCameraPreference(CaptureRequest.Key<Integer> key,int value){
+    private void setCameraPreference(CaptureRequest.Key<Integer> key,int value){            // Metodo creato per cambiare le impostazioni della fotocamera
         previewRequestBuilder.set(key,value);
         pictureRequestBuilder.set(key,value);
         updatePreview();
     }
 
+    // Gestione Permessi
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
@@ -407,9 +412,9 @@ public class MainActivity extends AppCompatActivity{
                     finish();
                 }
         }
-        textureListener = new TextureListener();
     }
 
+    // Gestione ciclo vita applicazione
     @Override
     protected void onResume() {
         super.onResume();
@@ -427,6 +432,7 @@ public class MainActivity extends AppCompatActivity{
         super.onPause();
     }
 
+    // Metodo creato per resettare i pulsanti delle impostazioni come "bianchi"
     protected void resetButtons(){
         holder.btnEffects.setBackgroundResource(R.drawable.effects);
         holder.btnAwb.setBackgroundResource(R.drawable.awb);
@@ -434,6 +440,7 @@ public class MainActivity extends AppCompatActivity{
         holder.btnNoise.setBackgroundResource(R.drawable.noise);
     }
 
+    //Callback che viene chiamata quando è disponibile la SurfaceTexture della TextureView
     class TextureListener implements TextureView.SurfaceTextureListener {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {openCamera();}
@@ -445,17 +452,17 @@ public class MainActivity extends AppCompatActivity{
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
     }
 
+    //Callback che viene chiamata quando è disponibile una nuova immagine nell'imageReader, ovvero quando viene scattata una foto
     class ImageListener implements ImageReader.OnImageAvailableListener {
         @Override
         public void onImageAvailable(ImageReader reader) {
-            //Callback che viene chiamata quando è disponibile una nuova immagine nell'imageReader, ovvero quando viene scattata una foto
             Image image = null;
             try {
                 image = reader.acquireLatestImage();
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.capacity()];
                 buffer.get(bytes);
-                CameraTools.save(bytes,file); //chiama il metodo di basso livello che salva i bytes nel File creato
+                CameraTools.save(bytes,file);                               //Metodo di basso livello che salva i bytes nel File creato
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -468,6 +475,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    // Callback chiamato a fine elaborazione della CaptureRequest
     class CaptureCallback extends CameraCaptureSession.CaptureCallback {
         @Override
         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
@@ -476,15 +484,13 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    // Invocato quando il cameraDevice finisce la sua configurazione, permettendo alla sessione di iniziare ad elaborare le richieste
     class SessionStateCallback extends CameraCaptureSession.StateCallback {
-        //Callback usata per ottenere lo stato della CameraCaptureSession
-
         @Override
         public void onConfigured(CameraCaptureSession session) {
             if (null == cameraDevice) {
                 return;
             }
-            //Se il cameraDevice è pronto sessione è pronta, viene mostrata l'anteprima a schermo tramite il metodo updatePreview();
             captureSession = session;
             updatePreview();
         }
@@ -495,9 +501,10 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    // Invocato dopo la CORRETTA apertura del cameraDevice.
     class CameraStateCallback extends CameraDevice.StateCallback {
         @Override
-        public void onOpened(CameraDevice camera) { //Chiamato quando viene aperta la Camera
+        public void onOpened(CameraDevice camera) {
             cameraDevice = camera;
             try {
                 previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW); //Creo il builder della CaptureRequest da passare alla sessione per mostrare la preview della camera
@@ -513,7 +520,8 @@ public class MainActivity extends AppCompatActivity{
         public void onError(@NonNull CameraDevice camera, int error) {}
     }
 
-    public class SingleMediaScanner implements MediaScannerConnection.MediaScannerConnectionClient { //Mostra una foto scattata tramite la galleria
+    // Gestione della galleria
+    public class SingleMediaScanner implements MediaScannerConnection.MediaScannerConnectionClient {
         private MediaScannerConnection mMs;
         private File mFile;
 
@@ -534,9 +542,7 @@ public class MainActivity extends AppCompatActivity{
             startActivity(intent);
             mMs.disconnect();
         }
-
     }
-
 }
 
 
