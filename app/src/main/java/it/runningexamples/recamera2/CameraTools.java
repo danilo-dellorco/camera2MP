@@ -1,4 +1,4 @@
-/** Questa classe contiene tutti i metodi usati nella MainActivity che non fanno direttamente utilizzo di parametri contenuti nell'activity.
+/* Questa classe contiene tutti i metodi usati nella MainActivity che non fanno direttamente utilizzo di parametri contenuti nell'activity.
  *  Viene utilizzata per snellire il codice */
 
 
