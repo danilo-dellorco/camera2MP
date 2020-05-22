@@ -40,10 +40,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity{
                 if (allFiles == null){
                     Toast.makeText(MainActivity.this, R.string.noPic, Toast.LENGTH_SHORT).show();
                 }else {
-                    new SingleMediaScanner(MainActivity.this, allFiles[folder.listFiles().length - 1]);
+                    new SingleMediaScanner(MainActivity.this, allFiles[Objects.requireNonNull(folder.listFiles()).length - 1]);
                 }
             }
             if (v.getId() == R.id.btnFlash) {
@@ -351,6 +351,7 @@ public class MainActivity extends AppCompatActivity{
     private void openCamera() {
         manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         try {
+            assert manager != null;
             characteristics = manager.getCameraCharacteristics(cameraId);                                   //Utilizzo il cameraID della fotocamera corrente per prenderne le sue caratteristiche
 
             //Ottienamo una StreamConfigurationMap dalle carachteristics della camera.
@@ -401,13 +402,12 @@ public class MainActivity extends AppCompatActivity{
 
     // Gestione Permessi
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_ALL:
-                if (grantResults.length > 0 && (grantResults[0] == PackageManager.PERMISSION_DENIED || grantResults[1] == PackageManager.PERMISSION_DENIED)) {
-                    Toast.makeText(MainActivity.this, getString(R.string.givePermission), Toast.LENGTH_LONG).show();
-                    finish();
-                }
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSION_ALL) {
+            if (grantResults.length > 0 && (grantResults[0] == PackageManager.PERMISSION_DENIED || grantResults[1] == PackageManager.PERMISSION_DENIED)) {
+                Toast.makeText(MainActivity.this, getString(R.string.givePermission), Toast.LENGTH_LONG).show();
+                finish();
+            }
         }
     }
 
@@ -453,21 +453,13 @@ public class MainActivity extends AppCompatActivity{
     class ImageListener implements ImageReader.OnImageAvailableListener {
         @Override
         public void onImageAvailable(ImageReader reader) {
-            Image image = null;
-            try {
-                image = reader.acquireLatestImage();
+            try (Image image = reader.acquireLatestImage()) {
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.capacity()];
                 buffer.get(bytes);
-                CameraTools.save(bytes,file);                               //Metodo di basso livello che salva i bytes nel File creato
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                CameraTools.save(bytes, file);                               //Metodo di basso livello che salva i bytes nel File creato
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                if (image != null) {
-                    image.close();
-                }
             }
         }
     }
@@ -475,7 +467,7 @@ public class MainActivity extends AppCompatActivity{
     // Callback chiamato a fine elaborazione della CaptureRequest
     class CaptureCallback extends CameraCaptureSession.CaptureCallback {
         @Override
-        public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
             Toast.makeText(MainActivity.this, getString(R.string.save) + file, Toast.LENGTH_SHORT).show();
         }
@@ -484,7 +476,7 @@ public class MainActivity extends AppCompatActivity{
     // Invocato quando il cameraDevice finisce la sua configurazione, permettendo alla sessione di iniziare ad elaborare le richieste
     class SessionStateCallback extends CameraCaptureSession.StateCallback {
         @Override
-        public void onConfigured(CameraCaptureSession session) {
+        public void onConfigured(@NonNull CameraCaptureSession session) {
             if (null == cameraDevice) {
                 return;
             }
@@ -493,7 +485,7 @@ public class MainActivity extends AppCompatActivity{
         }
 
         @Override
-        public void onConfigureFailed(CameraCaptureSession cameraCaptureSession) {
+        public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
             Toast.makeText(MainActivity.this, getString(R.string.configuration), Toast.LENGTH_SHORT).show();
         }
     }
@@ -501,7 +493,7 @@ public class MainActivity extends AppCompatActivity{
     // Invocato dopo la CORRETTA apertura del cameraDevice.
     class CameraStateCallback extends CameraDevice.StateCallback {
         @Override
-        public void onOpened(CameraDevice camera) {
+        public void onOpened(@NonNull CameraDevice camera) {
             cameraDevice = camera;
             try {
                 previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW); //Creo il builder della CaptureRequest da passare alla sessione per mostrare la preview della camera
@@ -522,7 +514,7 @@ public class MainActivity extends AppCompatActivity{
         private MediaScannerConnection mMs;
         private File mFile;
 
-        public SingleMediaScanner(Context context, File f) {
+        SingleMediaScanner(Context context, File f) {
             mFile = f;
             mMs = new MediaScannerConnection(context, this);
             mMs.connect();
