@@ -14,18 +14,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public class CameraTools {
-
-    // JPEG_ORIENTATION -> Se LENS_FACING_FRONT l'immagine jpeg deve essere ruotata rispetto all'orientamento della fotocamera.
-    // Dipende dalle caratteristiche del dispositivo. https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics#SENSOR_ORIENTATION
     public static int getJpegOrientation(CameraCharacteristics c, int deviceOrientation) {
         if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN)
             return 0;
         int sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION);
-
-        // Round device orientation to a multiple of 90
         deviceOrientation = (deviceOrientation + 45) / 90 * 90;
 
-        // se si tratta della fotocamera frontale -> ruota
+        // Se cameraDevice in uso è la camera frontale, l'immagine jpeg deve essere ruotata rispetto all'orientamento della fotocamera.
         boolean facingFront = c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT;
         if (facingFront) deviceOrientation = -deviceOrientation;
 
@@ -35,6 +30,7 @@ public class CameraTools {
         return jpegOrientation;
     }
 
+    //Controllo permessi
     public static boolean hasPermissions(Context context, String[] permissions) {
         boolean garanted = true;
         if (context != null && permissions != null) {
@@ -47,10 +43,10 @@ public class CameraTools {
         return garanted;
     }
 
+    // Creazione path file di salvataggio
     public static File createFilePhoto(File folder) {
-        // Crea il File dove salvare la foto scattata
         if (!folder.exists()) {
-            folder.mkdirs(); //crea la directory delle foto se questa non esiste
+            folder.mkdirs();            //crea la directory delle foto se questa non esiste
         }
         int serialNum = folder.listFiles().length;
         String path = Environment.getExternalStorageDirectory() + "/camera2photos/pic" + serialNum;
@@ -65,7 +61,6 @@ public class CameraTools {
     }
 
     public static void save(byte[] bytes, File file) throws IOException {
-        // Metodo di basso livello che salva il file attraverso uno Stream di bytes
         OutputStream output = null;
         try {
             output = new FileOutputStream(file);
